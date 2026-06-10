@@ -15,7 +15,8 @@ void setup(void) {
 
 void loop(void) {
     ClearBackground(RAYWHITE);
-    DrawRectangle(200, 100, 400, 400, RED);
+	DrawCircle(400, 300, 200, RED);
+	DrawRectangle(100, 200, 100, 200, GREEN);
 }
 
 void final(void) { CloseWindow(); }

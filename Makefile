@@ -27,7 +27,8 @@ LINUX_LIBS        = -LLibraries/Static/Linux/ -Wl,-Bstatic $(STATIC_LINUX_LIBS) 
 STATIC_WINDOWS_LIBS = -lraylib
 DYNAMIC_WINDOWS_LIBS= -lgdi32 -lwinmm
 WINDOWS_LIBS= -LLibraries/Static/Windows/ -Wl,-Bstatic $(STATIC_WINDOWS_LIBS) -Wl,-Bdynamic $(DYNAMIC_WINDOWS_LIBS)
-#WEB_LIBS=
+
+WEB_LIBS= -LLibraries/Static/Web/ -lraylib -lGL
 
 linux: Binaries/Linux/game
 windows: Binaries/Windows/game.exe

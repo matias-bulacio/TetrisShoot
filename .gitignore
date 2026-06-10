@@ -1,3 +1,9 @@
 Libraries/raylib-6.0_*
 compile_commands.json
 .clang-format
+Binaries/Linux
+Binaries/Windows
+Binaries/Web
+Build/Linux
+Build/Windows
+Build/Web

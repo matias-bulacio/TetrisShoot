@@ -34,28 +34,28 @@ linux: Binaries/Linux/game
 windows: Binaries/Windows/game.exe
 web: Binaries/Web/game.html
 
-Binaries/Linux/game: $(OBJECTS_LINUX)
+Binaries/Linux/game: $(OBJECTS_LINUX) | Binaries/Linux
 	$(LINUX_CC) -o $@ $^ $(LINUX_LIBS)
 
 Build/Linux/%.o: %.c | Build/Linux
 	mkdir -p $(dir $@)
 	$(LINUX_CC) $(CFLAGS) $(CFLAGS_LINUX) $(COMMON_INCLUDE) $(LINUX_INCLUDE) -c -o $@ $< -MF $(@:.o=.d)
 
-Binaries/Windows/game.exe: $(OBJECTS_WINDOWS)
+Binaries/Windows/game.exe: $(OBJECTS_WINDOWS) | Binaries/Windows
 	$(WINDOWS_CC) -o $@ $^ $(WINDOWS_LIBS)
 
 Build/Windows/%.o: %.c | Build/Windows
 	mkdir -p $(dir $@)
 	$(WINDOWS_CC) $(CFLAGS) $(CFLAGS_WINDOWS) $(COMMON_INCLUDE) $(WINDOWS_INCLUDE) -c -o $@ $< -MF $(@:.o=.d)
 
-Binaries/Web/game.html: $(OBJECTS_WEB)
+Binaries/Web/game.html: $(OBJECTS_WEB) | Binaries/Web
 	$(WEB_CC) -o $@ $^ $(WEB_LIBS)
 
 Build/Web/%.o: %.c | Build/Web
 	mkdir -p $(dir $@)
 	$(WEB_CC) $(CFLAGS) $(CFLAGS_WEB) $(COMMON_INCLUDE) $(WEB_INCLUDE) -c -o $@ $< -MF $(@:.o=.d)
 
-Build/Linux Build/Windows Build/Web:
+Build/Linux Build/Windows Build/Web Binaries/Linux Binaries/Windows Binaries/Web:
 	mkdir -p $@
 
 -include $(DEPENDENCIES_LINUX) $(DEPENDENCIES_WINDOWS) $(DEPENDENCIES_WEB)

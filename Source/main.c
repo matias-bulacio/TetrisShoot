@@ -3,6 +3,9 @@
 #include <stdbool.h>
 #include <tetris.h>
 
+#define SCREEN_WIDTH 832
+#define SCREEN_HEIGHT 640
+
 #ifdef PLATFORM_WEB
 #include <emscripten/emscripten.h>
 #endif
@@ -11,7 +14,7 @@ int escena = 1;
 bool ejecutar_setup_de_la_escena = true;
 
 void setup(void) {
-    InitWindow(800, 600, "TetrisShoot");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "TetrisShoot");
 
     // InitAudioDevice();
 

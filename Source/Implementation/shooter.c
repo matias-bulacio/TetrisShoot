@@ -12,6 +12,9 @@ Image image;
 Texture2D texture;
 size_t cantidad_enemigos = 5;
 
+Vector2 coordenadas_bala = {0, -100};
+bool mostrar_bala = false;
+
 int posicion_pistola = 416;
 
 int setup_shooter() {
@@ -47,19 +50,42 @@ int setup_shooter() {
 }
 
 int shooter(bool setup) {
-	float delta = GetFrameTime();
+    float delta = GetFrameTime();
     if (setup) { // Setting up
         int r = setup_shooter();
         if (r != 0)
             return r;
     }
-    for (size_t i = 0; i < cantidad_enemigos; i++) {
-        Enemigo_Avanzar(&arreglo_de_enemigos[i], 75, delta);
+
+    int movimiento_pistola = delta * 400 *
+                             ((IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) -
+                              (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)));
+
+    posicion_pistola += movimiento_pistola;
+    if (mostrar_bala) {
+        coordenadas_bala.y -= 1600 * delta;
     }
 
-    int movimiento_pistola = delta * 400 * ((IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) -
-                                    (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)));
-	 posicion_pistola += movimiento_pistola;
+    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W) ||
+        IsKeyPressed(KEY_SPACE)) {
+        mostrar_bala = true;
+        coordenadas_bala.x = posicion_pistola;
+        coordenadas_bala.y = 520;
+    }
+
+    if (coordenadas_bala.y < -50)
+        mostrar_bala = false;
+
+    for (size_t i = 0; i < cantidad_enemigos; i++) {
+		Enemigo *e = &arreglo_de_enemigos[i];
+        Enemigo_Avanzar(e, 75, delta);
+		if(mostrar_bala) {
+			if (e->coordenadas.y + 64 > coordenadas_bala.y && e->coordenadas.x - 40 < coordenadas_bala.x && coordenadas_bala.x < e->coordenadas.x + 40) {
+				mostrar_bala = false;
+				e->coordenadas.y = 2000;
+			}
+		}
+    }
 
     ClearBackground(BEIGE);
 
@@ -70,8 +96,10 @@ int shooter(bool setup) {
     char buf[200];
     sprintf(buf, "Puntos: %u", puntos);
 
+    if (mostrar_bala)
+        DrawRectangle(coordenadas_bala.x - 16, coordenadas_bala.y - 30, 32, 60,
+                      RED);
+    DrawRectangle(posicion_pistola - 20, 550, 40, 90, DARKGRAY);
     DrawText(buf, 20, 20, 24, BLACK);
-
-    DrawRectangle(posicion_pistola - 16, 550, 32, 90, DARKGRAY);
     return 1;
 }

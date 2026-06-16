@@ -77,14 +77,17 @@ int shooter(bool setup) {
         mostrar_bala = false;
 
     for (size_t i = 0; i < cantidad_enemigos; i++) {
-		Enemigo *e = &arreglo_de_enemigos[i];
+        Enemigo *e = &arreglo_de_enemigos[i];
         Enemigo_Avanzar(e, 75, delta);
-		if(mostrar_bala) {
-			if (e->coordenadas.y + 64 > coordenadas_bala.y && e->coordenadas.x - 40 < coordenadas_bala.x && coordenadas_bala.x < e->coordenadas.x + 40) {
-				mostrar_bala = false;
-				e->coordenadas.y = 2000;
-			}
-		}
+        if (mostrar_bala) {
+            if (e->coordenadas.y + 64 > coordenadas_bala.y &&
+                coordenadas_bala.y > e->coordenadas.y - 64 &&
+                e->coordenadas.x - 40 < coordenadas_bala.x &&
+                coordenadas_bala.x < e->coordenadas.x + 40) {
+                mostrar_bala = false;
+                e->coordenadas.y = 2000;
+            }
+        }
     }
 
     ClearBackground(BEIGE);

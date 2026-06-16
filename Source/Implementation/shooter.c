@@ -1,5 +1,6 @@
+#include <collision.h>
 #include <enemigos.h>
-#include <puntos.h>
+#include <estadisticas.h>
 #include <raylib.h>
 #include <shooter.h>
 #include <stdbool.h>
@@ -14,6 +15,12 @@ size_t cantidad_enemigos = 5;
 
 Vector2 coordenadas_bala = {0, -100};
 bool mostrar_bala = false;
+CollisionBox colisiones_bala = (CollisionBox){
+    .left = -16,
+    .right = 16,
+    .down = 30,
+    .up = -30,
+};
 
 int posicion_pistola = 416;
 
@@ -45,6 +52,12 @@ int setup_shooter() {
         e->coordenadas.y = 0;
         e->coordenadas.x = 64 + 176 * i;
         e->textura = &texture;
+        e->colisiones = (CollisionBox){
+            .left = -20,
+            .right = 20,
+            .up = -50,
+            .down = 50,
+        };
     }
     return 0;
 }
@@ -80,10 +93,8 @@ int shooter(bool setup) {
         Enemigo *e = &arreglo_de_enemigos[i];
         Enemigo_Avanzar(e, 75, delta);
         if (mostrar_bala) {
-            if (e->coordenadas.y + 64 > coordenadas_bala.y &&
-                coordenadas_bala.y > e->coordenadas.y - 64 &&
-                e->coordenadas.x - 40 < coordenadas_bala.x &&
-                coordenadas_bala.x < e->coordenadas.x + 40) {
+            if (DetectCollision(e->colisiones, colisiones_bala, e->coordenadas,
+                                coordenadas_bala)) {
                 mostrar_bala = false;
                 e->coordenadas.y = 2000;
             }
@@ -97,11 +108,13 @@ int shooter(bool setup) {
     Enemigo_DibujarVarios(arreglo_de_enemigos, cantidad_enemigos);
 
     char buf[200];
-    sprintf(buf, "Puntos: %u", puntos);
+    sprintf(buf, "Vida: %u", puntos);
 
     if (mostrar_bala)
-        DrawRectangle(coordenadas_bala.x - 16, coordenadas_bala.y - 30, 32, 60,
-                      RED);
+        DrawRectangle(coordenadas_bala.x + colisiones_bala.left,
+                      coordenadas_bala.y + colisiones_bala.up,
+                      colisiones_bala.right - colisiones_bala.left,
+                      colisiones_bala.down - colisiones_bala.up, RED);
     DrawRectangle(posicion_pistola - 20, 550, 40, 90, DARKGRAY);
     DrawText(buf, 20, 20, 24, BLACK);
     return 1;

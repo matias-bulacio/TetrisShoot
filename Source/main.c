@@ -10,7 +10,7 @@
 int escena = 0;
 
 void setup(void) {
-    InitWindow(800, 600, "TetrisShoot");
+    InitWindow(480, 600, "TetrisShoot");
 
     // InitAudioDevice();
 

@@ -69,7 +69,7 @@ typedef struct //se define las variables para ppoder mover la pieza y se guardan
 
 
 
-Piece block = {6, 0};//la pieza empieza en la columna 7 y en la fila 0
+Piece block = {2, 0};//la pieza empieza en la columna 7 y en la fila 0
 
 float timer = 0.0f;
 float fallSpeed = 0.5f; // segundos
@@ -86,8 +86,8 @@ int tetris(void)
     }
 if (meta==1){
     WaitTime(0.5);
-    block.y=0;
-    block.x=6; 
+    block.y=2  ;
+    block.x=0; 
     pieza_actual=GetRandomValue(0,6); 
     meta=0;
 }  
@@ -112,7 +112,7 @@ if (pieza_actual==0){
     color=PURPLE;
 }
  if (pieza_actual==6){
-    color=MAROON;
+    color=PINK;
 }  
     
  //para que se mueva constante sin importar las fps
@@ -127,15 +127,18 @@ if (pieza_actual==0){
       }
 //////////////////////////////////////////////////
     if (meta!=1){// Movimiento horizontal
-    if (IsKeyPressed(KEY_LEFT) && izquierda == 0)
-        block.x--;
+    if (IsKeyPressed(KEY_LEFT) && izquierda == 0){
+        block.x--;}
 
-    if (IsKeyPressed(KEY_RIGHT ) && derecha == 0)
-        block.x++;
-    }
-    if (IsKeyDown(KEY_DOWN))
-        block.y++;
-        
+    if (IsKeyPressed(KEY_RIGHT ) && derecha == 0){
+        block.x++;}
+    
+    if (IsKeyDown(KEY_DOWN)){
+        block.y++;}
+
+    if (IsKeyPressed(KEY_UP)){
+     ImageRotateCW(&bloque_imagen);  }  
+    }   
 //////////////////////////////////////////////////
      // Cuadrícula
     for (int x = 0; x < SCREEN_WIDTH; x += BLOCK_SIZE)//creo una variable x y una y para dinbujar lineas
@@ -177,6 +180,7 @@ if (pieza_actual==0){
         if ( bloque[pieza_actual][fila][columna]==1){
           if (block.y + fila > maxY ){//si el limite de la pieza supera el del tablero...
                fondo=1;
+               
           }}}}
       
     if (fondo==1){//una vez que se acomodo la pieza se guarda la posicion
@@ -186,11 +190,13 @@ if (pieza_actual==0){
             if ( bloque[pieza_actual][fila][columna]==1){
              board[block.y + fila][block.x + columna] = 1; 
              board_color[block.y + fila][block.x + columna]=color;
-               meta=1;
+             DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
+             
+              meta=1;
              }}}}
 
 ////////////////////////////////////////////
-//colision vertical
+//colision vertical  CHEQUEAR
 int choquev=0;
     for ( int fila = 0; fila < FILAS_MAX; fila++){
     for ( int columna = 0; columna < COLUMNAS_MAX; columna++){ 
@@ -198,6 +204,7 @@ int choquev=0;
     if ( bloque[pieza_actual][fila][columna]==1){
         if (board[block.y + fila + 1][block.x + columna]== 1){//si la pieza se desplaza uno mas choca con algo?
              choquev=1;
+             
         }}}}
         
     if (choquev==1){         
@@ -206,8 +213,10 @@ int choquev=0;
         if ( bloque[pieza_actual][fila][columna]==1){
              board[block.y +  fila][block.x + columna] = 1; 
              board_color[block.y +  fila][block.x + columna]=color;
-            }}}
-        meta=1;}
+             DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE,  board_color[fila][columna]);
+         
+               }}}
+         meta=1;}
 ////////////////////////////////////////////       
 //colision horizontal: revisar que cuando pasa al lado de  una pieza ya no baja porque la detecta
  int choquehd=0;
@@ -266,14 +275,15 @@ int choquev=0;
         {
             if (board[fila][columna] == 1)
             {
-                DrawRectangle(columna * BLOCK_SIZE, fila * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, board_color[fila][columna]);
+                DrawTexture(textura, columna * BLOCK_SIZE, fila * BLOCK_SIZE, board_color[fila][columna]);
+                //DrawRectangle(columna * BLOCK_SIZE, fila * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, board_color[fila][columna]);
             }
         }
     }
 //////////////////////////////////////////////  
 
 //ROTACION
-/*if (IsKeyPressed(KEY_UP) && bloque [pieza_actual][0][0]==2){ //si se presiona la flecha hacia arriba y la pieza es el cuadrado no rota
+/* && bloque [pieza_actual][0][0]==2){ //si se presiona la flecha hacia arriba y la pieza es el cuadrado no rota
     pieza_actual=
     int temp[4][4];
     for (int fila = 0; fila < FILAS_MAX; fila++){

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <resources.h>
 #include <stdlib.h>
 
 Image image_pistola;
@@ -38,7 +39,7 @@ int setup_shooter() {
     if (IsImageValid(image_pistola)) {
         UnloadImage(image_pistola);
     }
-    image_pistola = LoadImage("Resources/Shooter/pistol.png");
+    image_pistola = Resources_LoadImage("Resources/Shooter/pistol.png");
     ImageResizeNN(&image_pistola, 45, 180);
     textura_pistola = LoadTextureFromImage(image_pistola);
 
@@ -48,7 +49,7 @@ int setup_shooter() {
     if (IsImageValid(image_bala)) {
         UnloadImage(image_bala);
     }
-    image_bala = LoadImage("Resources/Shooter/bala.png");
+    image_bala = Resources_LoadImage("Resources/Shooter/bala.png");
     ImageResizeNN(&image_bala, colisiones_bala.right - colisiones_bala.left,
                   colisiones_bala.down - colisiones_bala.up);
     textura_bala = LoadTextureFromImage(image_bala);
@@ -59,7 +60,7 @@ int setup_shooter() {
     if (IsImageValid(image_enemigo)) {
         UnloadImage(image_enemigo);
     }
-    image_enemigo = LoadImage("Resources/Animals/tiger.png");
+    image_enemigo = Resources_LoadImage("Resources/Animals/tiger.png");
     ImageResizeNN(&image_enemigo, 128, 128);
     textura_enemigo = LoadTextureFromImage(image_enemigo);
 

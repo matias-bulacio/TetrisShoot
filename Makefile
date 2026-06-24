@@ -36,6 +36,8 @@ web: Binaries/Web/game.html
 
 Binaries/Linux/game: $(OBJECTS_LINUX) | Binaries/Linux
 	$(LINUX_CC) -o $@ $^ $(LINUX_LIBS)
+	rm -rf $(dir $@)/Resources
+	cp -r Resources $(dir $@)
 
 Build/Linux/%.o: %.c | Build/Linux
 	mkdir -p $(dir $@)
@@ -43,6 +45,8 @@ Build/Linux/%.o: %.c | Build/Linux
 
 Binaries/Windows/game.exe: $(OBJECTS_WINDOWS) | Binaries/Windows
 	$(WINDOWS_CC) -o $@ $^ $(WINDOWS_LIBS)
+	rm -rf $(dir $@)/Resources
+	cp -r Resources $(dir $@)
 
 Build/Windows/%.o: %.c | Build/Windows
 	mkdir -p $(dir $@)
@@ -50,6 +54,8 @@ Build/Windows/%.o: %.c | Build/Windows
 
 Binaries/Web/game.html: $(OBJECTS_WEB) | Binaries/Web
 	$(WEB_CC) -o $@ $^ $(WEB_LIBS)
+	rm -rf $(dir $@)/Resources
+	cp -r Resources $(dir $@)
 
 Build/Web/%.o: %.c | Build/Web
 	mkdir -p $(dir $@)

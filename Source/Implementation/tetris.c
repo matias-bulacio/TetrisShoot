@@ -19,7 +19,10 @@ int maxY = 20; //(SCREEN_HEIGHT / BLOCK_SIZE) - 1;
 
 int pieza_actual = 0;
 Color board_color[FILA][COLUMN];
-Color color;
+Color color [7] = {RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, PINK};
+Color color_sig [7] = {RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, PINK};
+Color sig_color;
+
 
 int bloque[PIEZAS_MAX][FILAS_MAX][COLUMNAS_MAX] = {
     // 7 piezas, 4 filas, 4 columnas
@@ -72,9 +75,9 @@ int DERECHA1[PIEZAS_MAX][FILAS_MAX][COLUMNAS_MAX] = {
      {0, 1, 0, 0},
      {0, 1, 0, 0}}, //---- PIEZA 1
 
-    {{1, 0, 0, 0},
-     {1, 1, 0, 0},
-     {1, 0, 0, 0},
+    {{0, 1, 0, 0},
+     {0, 1, 1, 0},
+     {0, 1, 0, 0},
      {0, 0, 0, 0}}, // T  PIEZA 3
 
     {{0, 1, 1, 0},
@@ -182,6 +185,15 @@ int izquierda = 0;
 int gameover = 0;
 int choquev;
 int choquehd;
+int puntos = 0;
+int detectar_linea = 0;
+int linea_completa = 0;
+int linea = 0;
+
+int cont = 0;
+int tiempo = 0;
+
+int sig_piezas[6] = {0, 0, 0, 0, 0};
 
 typedef struct // se define las variables para ppoder mover la pieza y se guardan dentro de la estructura pieza
 {
@@ -244,12 +256,17 @@ int tetris(void)
     if (gameover == 0)
     {
         DrawRectangle(0, 120, 480, 30, colorl);
+
         if (primera_vez)
         {
             primera_vez = 0;
             bloque_imagen = LoadImage("Resources/Tetris/bloque.png");
             ImageResizeNN(&bloque_imagen, 30, 30);
             textura = LoadTextureFromImage(bloque_imagen);
+            for (int i = 0; i < 6; i++)
+            {
+                sig_piezas[i] = GetRandomValue(0, 6);
+            }
         }
         if (meta == 1)
         {
@@ -271,49 +288,18 @@ int tetris(void)
                 }
             }
 
-            for (int fila = 0; fila < FILA; fila++)
+            pieza_actual = sig_piezas[1];
+
+            for (int i = 0; i < 5; i++)
             {
-                for (int columna = 0; columna < COLUMN; columna++)
-                {
-                    if (board[4][columna] == 0)
-                    {
-
-                        pieza_actual = GetRandomValue(0, 6);
-
-                        meta = 0;
-                    }
-                }
+                sig_piezas[i] = sig_piezas[i + 1];
             }
+            sig_piezas[5] = GetRandomValue(0, 6); // una vez que se desplazaro que se genere u nuevo valor
+
+            meta = 0;
         }
 
-        if (pieza_actual == 0)
-        {
-            color = RED;
-        }
-        if (pieza_actual == 1)
-        {
-            color = GREEN;
-        }
-        if (pieza_actual == 2)
-        {
-            color = BLUE;
-        }
-        if (pieza_actual == 3)
-        {
-            color = YELLOW;
-        }
-        if (pieza_actual == 4)
-        {
-            color = ORANGE;
-        }
-        if (pieza_actual == 5)
-        {
-            color = PURPLE;
-        }
-        if (pieza_actual == 6)
-        {
-            color = PINK;
-        }
+        
 
         // para que se mueva constante sin importar las fps
         float delta = GetFrameTime();
@@ -331,11 +317,13 @@ int tetris(void)
             if (IsKeyPressed(KEY_LEFT) && izquierda == 0)
             {
                 block.x--;
+                izquierda = 1;
             }
 
             if (IsKeyPressed(KEY_RIGHT) && derecha == 0)
             {
                 block.x++;
+                derecha = 1;
             }
 
             if (IsKeyDown(KEY_DOWN))
@@ -345,6 +333,7 @@ int tetris(void)
                     block.y++;
                 }
             }
+
             if (IsKeyPressed(KEY_UP))
             {
 
@@ -366,7 +355,54 @@ int tetris(void)
                 // Se pasó una posición
             }
         }
-    }
+
+        //////////////////////////////////////////////
+        // deteccion de linea completa
+
+        for (int fila = 0; fila < FILA; fila++)
+        {
+            linea = 1;
+            for (int columna = 0; columna < COLUMN; columna++)
+            {
+                if (board[fila][columna] == 0)
+                {
+
+                    linea = 0;
+                }
+            }
+            if (linea == 1)
+            {
+
+                // cada linea vale 100 puntos (sin doubble, triple, etc)
+                for (int columna = 0; columna < COLUMN; columna++)
+                {
+                    board[fila][columna] = 0;
+                    detectar_linea = 1;
+                }
+            }
+
+            if (detectar_linea == 1)
+            {
+                for (int fila2 = fila; fila2 > 0; fila2--)
+                {
+                    for (int columna = 0; columna < COLUMN; columna++)
+                    {
+                        board[fila2][columna] = board[fila2 - 1][columna];
+
+                        board_color[fila2][columna] = board_color[fila2 - 1][columna];
+                    }
+                }
+                linea_completa++; // para puntos
+                detectar_linea = 0;
+            }
+        }
+        puntos = linea_completa * 100;
+        //////////////////////////////////////////////////
+
+    } // cierre gameover
+
+    //////////////////////////////////////////////////
+
     //////////////////////////////////////////////////
     // Cuadrícula
     for (int x = 0; x < SCREEN_WIDTH; x += BLOCK_SIZE) // creo una variable x y una y para dinbujar lineas
@@ -532,7 +568,7 @@ int tetris(void)
                     if (bloque[pieza_actual][fila][columna] == 1)
                     {
                         board[block.y + fila][block.x + columna] = 1;
-                        board_color[block.y + fila][block.x + columna] = color;
+                        board_color[block.y + fila][block.x + columna] = color [pieza_actual];
                         DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
 
                         meta = 1;
@@ -545,7 +581,7 @@ int tetris(void)
                     if (DERECHA1[pieza_actual][fila][columna] == 1)
                     {
                         board[block.y + fila][block.x + columna] = 1;
-                        board_color[block.y + fila][block.x + columna] = color;
+                        board_color[block.y + fila][block.x + columna] = color [pieza_actual];
                         DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
 
                         meta = 1;
@@ -558,7 +594,7 @@ int tetris(void)
                     if (DERECHA2[pieza_actual][fila][columna] == 1)
                     {
                         board[block.y + fila][block.x + columna] = 1;
-                        board_color[block.y + fila][block.x + columna] = color;
+                        board_color[block.y + fila][block.x + columna] = color [pieza_actual];
                         DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
 
                         meta = 1;
@@ -572,7 +608,7 @@ int tetris(void)
                     if (DERECHA3[pieza_actual][fila][columna] == 1)
                     {
                         board[block.y + fila][block.x + columna] = 1;
-                        board_color[block.y + fila][block.x + columna] = color;
+                        board_color[block.y + fila][block.x + columna] = color [pieza_actual];
                         DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
 
                         meta = 1;
@@ -586,61 +622,6 @@ int tetris(void)
     ////////////////////////////////////////////
     // colision vertical  CHEQUEAR
     choquev = colisionanV(rotacion, pieza_actual);
-
-    /*for (int fila = 0; fila < FILAS_MAX; fila++)
-    {
-        for (int columna = 0; columna < COLUMNAS_MAX; columna++)
-        {
-
-            if (rotacion == 0)
-            {
-                if (bloque[pieza_actual][fila][columna] == 1)
-                {
-
-                    if (board[block.y + fila + 1][block.x + columna] == 1)
-                    { // si la pieza se desplaza uno mas choca con algo?
-                        choquev = 1;
-                    }
-                }
-            }
-
-            if (rotacion == 1)
-            {
-                if (DERECHA1[pieza_actual][fila][columna] == 1)
-                {
-
-                    if (board[block.y + fila + 1][block.x + columna] == 1)
-                    { // si la pieza se desplaza uno mas choca con algo?
-                        choquev = 1;
-                    }
-                }
-            }
-
-            if (rotacion == 2)
-            {
-                if (DERECHA2[pieza_actual][fila][columna] == 1)
-                {
-
-                    if (board[block.y + fila + 1][block.x + columna] == 1)
-                    { // si la pieza se desplaza uno mas choca con algo?
-                        choquev = 1;
-                    }
-                }
-            }
-
-            if (rotacion == 3)
-            {
-                if (DERECHA3[pieza_actual][fila][columna] == 1)
-                {
-
-                    if (board[block.y + fila + 1][block.x + columna] == 1)
-                    { // si la pieza se desplaza uno mas choca con algo?
-                        choquev = 1;
-                    }
-                }
-            }
-        }
-    }*/
 
     if (choquev == 1)
     {
@@ -656,7 +637,7 @@ int tetris(void)
                     if (bloque[pieza_actual][fila][columna] == 1)
                     {
                         board[block.y + fila][block.x + columna] = 1;
-                        board_color[block.y + fila][block.x + columna] = color;
+                        board_color[block.y + fila][block.x + columna] = color [pieza_actual];
                         DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
                     }
                     break;
@@ -667,7 +648,7 @@ int tetris(void)
                     if (DERECHA1[pieza_actual][fila][columna] == 1)
                     {
                         board[block.y + fila][block.x + columna] = 1;
-                        board_color[block.y + fila][block.x + columna] = color;
+                        board_color[block.y + fila][block.x + columna] = color [pieza_actual];
                         DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
                     }
                     break;
@@ -678,7 +659,7 @@ int tetris(void)
                     if (DERECHA2[pieza_actual][fila][columna] == 1)
                     {
                         board[block.y + fila][block.x + columna] = 1;
-                        board_color[block.y + fila][block.x + columna] = color;
+                        board_color[block.y + fila][block.x + columna] = color [pieza_actual];
                         DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
                     }
                     break;
@@ -689,7 +670,7 @@ int tetris(void)
                     if (DERECHA3[pieza_actual][fila][columna] == 1)
                     {
                         board[block.y + fila][block.x + columna] = 1;
-                        board_color[block.y + fila][block.x + columna] = color;
+                        board_color[block.y + fila][block.x + columna] = color [pieza_actual];
                         DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, board_color[fila][columna]);
                     }
                     break;
@@ -873,7 +854,7 @@ int tetris(void)
                 if (bloque[pieza_actual][fila][columna] == 1)
                 {
 
-                    DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, color);
+                    DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, color [pieza_actual]);
                 }
             }
 
@@ -883,7 +864,7 @@ int tetris(void)
                 if (DERECHA1[pieza_actual][fila][columna] == 1)
                 {
 
-                    DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, color);
+                    DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, color [pieza_actual]);
                 }
             }
 
@@ -892,7 +873,7 @@ int tetris(void)
 
                 if (DERECHA2[pieza_actual][fila][columna] == 1)
                 {
-                    DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, color);
+                    DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, color [pieza_actual]);
                 }
             }
 
@@ -902,21 +883,118 @@ int tetris(void)
                 if (DERECHA3[pieza_actual][fila][columna] == 1)
                 {
 
-                    DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, color);
+                    DrawTexture(textura, (block.x + columna) * BLOCK_SIZE, (block.y + fila) * BLOCK_SIZE, color [pieza_actual]);
                 }
             }
         }
     }
     DrawRectangle(480, 0, 150, 630, WHITE);
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+     for (int fila = 0; fila < 4; fila++)
+        {
+            for (int columna = 0; columna < 4; columna++)
+            {
+                
+
+                if (bloque[sig_piezas[1]][fila][columna] == 1)
+                {
+                    DrawRectangle(510 + columna * BLOCK_SIZE,
+                                  30 + fila * BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  BLOCK_SIZE, 
+                                   color_sig [sig_piezas[1]]);
+                    DrawTexture(textura, 510 + columna * BLOCK_SIZE, 30 + fila * BLOCK_SIZE, color_sig [sig_piezas[1]]);
+                }
+                  
+                if (bloque[sig_piezas[2]][fila][columna] == 1)
+                {
+                    DrawRectangle(510 + columna * BLOCK_SIZE,
+                                  120 + fila * BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  color_sig [sig_piezas[2]]);
+                    DrawTexture(textura, 510 + columna * BLOCK_SIZE, 120 + fila * BLOCK_SIZE, color_sig [sig_piezas[2]]);
+                }
+
+                if (bloque[sig_piezas[3]][fila][columna] == 1)
+                {
+                    DrawRectangle(510 + columna * BLOCK_SIZE,
+                                  210 + fila * BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  color_sig [sig_piezas[3]]);
+                    DrawTexture(textura, 510 + columna * BLOCK_SIZE, 210 + fila * BLOCK_SIZE, color_sig [sig_piezas[3]]);
+                }
+
+                if (bloque[sig_piezas[4]][fila][columna] == 1)
+                {
+                    DrawRectangle(510 + columna * BLOCK_SIZE,
+                                  300 + fila * BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  color_sig [sig_piezas[4]]);
+                    DrawTexture(textura, 510 + columna * BLOCK_SIZE, 300 + fila * BLOCK_SIZE, color_sig [sig_piezas[4]]);
+                }
+
+                if (bloque[sig_piezas[5]][fila][columna] == 1)
+                {
+                    DrawRectangle(510 + columna * BLOCK_SIZE,
+                                  390 + fila * BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  BLOCK_SIZE,
+                                  color_sig [sig_piezas[5]]);
+                    DrawTexture(textura, 510 + columna * BLOCK_SIZE, 390 + fila * BLOCK_SIZE, color_sig [sig_piezas[5]]);
+                }
+            }
+        }
 
     //////////////////////////////////////////////
-    // fuera del game over
+    if (gameover == 0)
+    {
+
+       
+
+        DrawText("PUNTAJE", 510, 470, 20, BLACK);
+        DrawText(TextFormat("%d", puntos), 510, 500, 20, BLACK);
+        DrawText("TIEMPO", 510, 555, 20, BLACK);
+        
+
+        cont = GetTime();
+        if (cont > 120)
+        {
+            cont = 120;
+        }
+        tiempo = 120 - cont;
+
+        if (tiempo > 0 && tiempo <= 120) // tiempo limite de juego
+        {
+            DrawText(TextFormat("%d s", tiempo), 510, 585, 20, BLACK);
+        }
+        if (tiempo == 0)
+        {
+            DrawText(TextFormat("%d s", 0), 510, 585, 20, BLACK);
+            gameover = 1;
+        }
+    }
+
+    //////////////////////////////////////////////
+
     if (gameover == 1)
     {
         DrawRectangle(0, 0, 800, 630, OPA);
         DrawText("Game over", 80, 210, 90, WHITE);
-        DrawText("Puntaje:  ", 80, 280, 50, WHITE);
+        DrawText("Puntaje:  ", 80, 330, 30, WHITE);
+        DrawText(TextFormat("%d", puntos), 220, 330, 30, WHITE);
+        DrawText("Tiempo:  ", 80, 400, 30, WHITE);
+        if (tiempo == 0) // tiempo limite de juego
+        {
+            DrawText(TextFormat("%d s", 120), 220, 400, 30, WHITE);
+        }
+        else
+        {
+            DrawText(TextFormat("%d s", cont), 220, 400, 30, WHITE);
+        }
     }
+
     return 0;
 } // rever limites laterales con el tablero, no se colisionan si estoy tocando el boton de bajar y aarece una nueva

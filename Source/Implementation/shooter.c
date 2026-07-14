@@ -23,10 +23,10 @@ ListaEscondites le;
 Vector2 coordenadas_bala = {0, -100};
 bool mostrar_bala = false;
 CollisionBox colisiones_bala = (CollisionBox){
-    .left = -21,
-    .right = 21,
-    .down = 21,
-    .up = -21,
+    .left = -18,
+    .right = 18,
+    .down = 18,
+    .up = -18,
 };
 
 // SCREEN_WIDTH/2
@@ -41,7 +41,7 @@ int setup_shooter() {
         UnloadTexture(dib_pistola.textura);
     }
     Image image_pistola = Resources_LoadImage("Resources/Shooter/pistol.png");
-    ImageResizeNN(&image_pistola, 45, 180);
+    ImageResizeNN(&image_pistola, 35, 150);
     dib_pistola = LoadDibujoFromCenteredImage(image_pistola);
 
     if (IsTextureValid(dib_bala.textura)) {
@@ -57,7 +57,7 @@ int setup_shooter() {
     }
 
     Image image_enemigo = Resources_LoadImage("Resources/Animals/tiger.png");
-    ImageResizeNN(&image_enemigo, 128, 128);
+    ImageResizeNN(&image_enemigo, 96, 96);
     dib_enemigo = LoadDibujoFromCenteredImage(image_enemigo);
 
     if (arreglo_de_enemigos == NULL)
@@ -77,10 +77,10 @@ int setup_shooter() {
         e->coordenadas.y = 0;
         e->coordenadas.x = 64 + 176 * i;
         e->colisiones = (CollisionBox){
-            .left = -20,
-            .right = 20,
-            .up = -50,
-            .down = 50,
+            .left = -15,
+            .right = 15,
+            .up = -30,
+            .down = 30,
         };
         e->dib = &dib_enemigo;
     }
@@ -96,8 +96,8 @@ int setup_shooter() {
             .right = 40,
         };
         le.arr[i].coordinates = (Vector2){
-            .y = 30 + 60 * i,
-            .x = 50 + 100 * i,
+            .y = 120 + 70 * i,
+            .x = 380 + 80 * (i % 2 == 0 ? i : -i),
         };
         le.arr[i].dib = &dib_escondite;
     }

@@ -2,7 +2,7 @@ LINUX_CC=gcc
 WINDOWS_CC=x86_64-w64-mingw32-gcc
 WEB_CC=/usr/lib/emscripten/emcc
 CFLAGS=-O2 -Wall -Wextra -MMD -MP
-CFLAGS_LINUX= -DPLATFORM_LINUX
+CFLAGS_LINUX= -DPLATFORM_LINUX -g
 CFLAGS_WINDOWS= -DPLATFORM_WINDOWS
 CFLAGS_WEB= -DPLATFORM_WEB --memory-init-file 0 -s USE_GLFW=3 --shell-file=Libraries/Static/Web/minshell.html -s MAX_WEBGL_VERSION=2
 

@@ -19,6 +19,7 @@ Enemigo *arreglo_de_enemigos;
 size_t cantidad_enemigos = 5;
 
 ListaEscondites le;
+ListaEscondites escondites_ganadores;
 
 Vector2 coordenadas_bala = {0, -100};
 bool mostrar_bala = false;
@@ -71,10 +72,53 @@ int setup_shooter() {
         return -1; // Error
     }
 
+    Image image_escondite = GenImageColor(60, 20, BROWN);
+    dib_escondite = LoadDibujoFromCenteredImage(image_escondite);
+
+    le = NewListaEscondites(10);
+    for (size_t i = 0; i < 5; i++) {
+		Escondite *esc = le.arr + i;
+        esc->collision = (CollisionBox){
+            .up = -5,
+            .down = 5,
+            .left = -20,
+            .right = 20,
+        };
+        esc->coordinates = (Vector2){
+            .y = 120 + 70 * i,
+            .x = 380 + 80 * (i % 2 == 0 ? i : -i),
+        };
+        esc->dib = &dib_escondite;
+		esc->zona_escondida = (Vector2) {
+			.x = 0,
+			.y = -50,
+		};
+    }
+	le.arr[5].coordinates.x =  60;
+	le.arr[6].coordinates.x = 220;
+	le.arr[7].coordinates.x = 460;
+	le.arr[8].coordinates.x = 620;
+	le.arr[9].coordinates.x = 780;
+    for (size_t i = 5; i < 10; i++) {
+		Escondite *esc = le.arr + i;
+        esc->collision = (CollisionBox){
+            .up = -5,
+            .down = 5,
+            .left = -20,
+            .right = 20,
+        };
+        esc->coordinates.y = 640 + 100;
+        esc->dib = &dib_escondite;
+		esc->zona_escondida = (Vector2) {
+			.x = 0,
+			.y = -50,
+		};
+    }
+
     // TODO: Mover estos números mágicos a una configuración
     for (size_t i = 0; i < cantidad_enemigos; i++) {
         Enemigo *e = &arreglo_de_enemigos[i];
-        e->coordenadas.y = 0;
+        e->coordenadas.y = -100;
         e->coordenadas.x = 64 + 176 * i;
         e->colisiones = (CollisionBox){
             .left = -15,
@@ -82,30 +126,16 @@ int setup_shooter() {
             .up = -30,
             .down = 30,
         };
+		e->le = &le;
         e->dib = &dib_enemigo;
-    }
-    Image image_escondite = GenImageColor(100, 20, BROWN);
-    dib_escondite = LoadDibujoFromCenteredImage(image_escondite);
-
-    le = NewListaEscondites(5);
-    for (size_t i = 0; i < le.cantidad; i++) {
-        le.arr[i].collision = (CollisionBox){
-            .up = -5,
-            .down = 5,
-            .left = -40,
-            .right = 40,
-        };
-        le.arr[i].coordinates = (Vector2){
-            .y = 120 + 70 * i,
-            .x = 380 + 80 * (i % 2 == 0 ? i : -i),
-        };
-        le.arr[i].dib = &dib_escondite;
+		e->velocidad = 75;
     }
     return 0;
 }
 
 int shooter(bool setup) {
     float delta = GetFrameTime();
+    float now = GetTime();
     if (setup) {
         int r = setup_shooter();
         if (r != 0)
@@ -134,15 +164,21 @@ int shooter(bool setup) {
 
     for (size_t i = 0; i < cantidad_enemigos; i++) {
         Enemigo *e = &arreglo_de_enemigos[i];
-        Enemigo_Avanzar(e, 75, delta);
+        Enemigo_Update(e, now, delta);
         if (mostrar_bala) {
             if (DetectCollision(e->colisiones, colisiones_bala, e->coordenadas,
                                 coordenadas_bala)) {
                 mostrar_bala = false;
                 e->coordenadas.y = 2000;
+				e->esc->ocupado = false;
             }
         }
+		if (e->coordenadas.y > 640 + 100) {
+			e->estado = ENEM_STATE_INACTIVO;
+			e->coordenadas.y = -100;
+		}
     }
+
     for (size_t i = 0; i < le.cantidad; i++) {
         if (mostrar_bala &&
             DetectCollision(le.arr[i].collision, colisiones_bala,

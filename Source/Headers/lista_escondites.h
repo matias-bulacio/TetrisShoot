@@ -11,3 +11,5 @@ ListaEscondites NewListaEscondites(size_t cant);
 void FreeListaEscondites(ListaEscondites *le);
 Escondite *PrimerEsconditeLibre(ListaEscondites *le);
 Escondite *PrimerEsconditeLibreDetrasDeY(ListaEscondites *le, int min_y);
+
+void Dibujar_ListaEscondites(ListaEscondites *lesc);

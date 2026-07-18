@@ -15,3 +15,8 @@ void Dibujar(Dibujo *d, Vector2 coordenadas) {
     DrawTexture(d->textura, d->offset.x + coordenadas.x,
                 d->offset.y + coordenadas.y, d->tinta);
 }
+
+void ResetDibujo(Dibujo *d) {
+    if (IsTextureValid(d->textura))
+        UnloadTexture(d->textura);
+}

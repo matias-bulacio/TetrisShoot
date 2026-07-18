@@ -27,3 +27,9 @@ Escondite *PrimerEsconditeLibreDetrasDeY(ListaEscondites *le, int min_y) {
     }
     return NULL;
 }
+
+void Dibujar_ListaEscondites(ListaEscondites *lesc) {
+    for (size_t i = 0; i < lesc->cantidad; i++) {
+        Dibujar(lesc->arr[i].dib, lesc->arr[i].coordinates);
+    }
+}

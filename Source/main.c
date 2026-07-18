@@ -1,10 +1,8 @@
 #include <raylib.h>
+#include <screen.h>
 #include <shooter.h>
 #include <stdbool.h>
 #include <tetris.h>
-
-#define SCREEN_WIDTH 832
-#define SCREEN_HEIGHT 640
 
 #ifdef PLATFORM_WEB
 #include <emscripten/emscripten.h>
@@ -14,7 +12,7 @@ int escena = 1;
 bool ejecutar_setup_de_la_escena = true;
 
 void setup(void) {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "TetrisShoot");
+    InitWindow(SCREEN_INIT_WIDTH, SCREEN_INIT_HEIGHT, "TetrisShoot");
 
     // InitAudioDevice();
 
@@ -26,11 +24,11 @@ void loop(void) {
     switch (escena) {
     case 0:
         escena = tetris(ejecutar_setup_de_la_escena);
-		ejecutar_setup_de_la_escena = escena != 0;
+        ejecutar_setup_de_la_escena = escena != 0;
         break;
     case 1:
         escena = shooter(ejecutar_setup_de_la_escena);
-		ejecutar_setup_de_la_escena = escena != 1;
+        ejecutar_setup_de_la_escena = escena != 1;
         break;
     }
 }

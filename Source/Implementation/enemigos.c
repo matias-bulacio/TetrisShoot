@@ -7,7 +7,7 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
     switch (e->estado) {
     case ENEM_STATE_NULL:
         e->esperar_hasta = now + 6;
-		e->estado = ENEM_STATE_INACTIVO;
+        e->estado = ENEM_STATE_INACTIVO;
         break;
     case ENEM_STATE_INACTIVO:
         if (now > e->esperar_hasta) {
@@ -15,7 +15,8 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
             if (e->esc == NULL)
                 break;
 
-            e->objetivo = Vector2Add(e->esc->zona_escondida, e->esc->coordinates);
+            e->objetivo =
+                Vector2Add(e->esc->zona_escondida, e->esc->coordinates);
             e->coordenadas.x = e->objetivo.x;
             e->esc->ocupado = true;
             e->estado = ENEM_STATE_CORRIENDO_Y;
@@ -53,20 +54,28 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
 
             e->esc->ocupado = false;
             e->esc = esc;
-            e->objetivo = Vector2Add(e->esc->zona_escondida, e->esc->coordinates);
+            e->objetivo =
+                Vector2Add(e->esc->zona_escondida, e->esc->coordinates);
             e->esc->ocupado = true;
             e->estado = ENEM_STATE_CORRIENDO_X;
         }
         break;
-	case ENEM_STATE_OUT:
-		break;
+    case ENEM_STATE_OUT:
+        break;
     }
 }
 
 void Enemigo_DibujarVarios(Enemigo *earr, size_t cantidad) {
     for (size_t i = 0; i < cantidad; i++) {
         Enemigo *e = &earr[i];
-        if (e->estado != ENEM_STATE_NULL && e->estado != ENEM_STATE_INACTIVO && e->estado != ENEM_STATE_OUT)
+        if (e->estado != ENEM_STATE_NULL && e->estado != ENEM_STATE_INACTIVO &&
+            e->estado != ENEM_STATE_OUT)
             Dibujar(e->dib, e->coordenadas);
     }
+}
+
+void Enemigo_Reset(Enemigo *e) {
+    e->estado = ENEM_STATE_INACTIVO;
+    e->coordenadas.y = -100;
+    e->esc->ocupado = false;
 }

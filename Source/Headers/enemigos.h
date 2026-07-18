@@ -7,12 +7,12 @@
 #include <raylib.h>
 #include <stddef.h>
 typedef enum {
-	ENEM_STATE_NULL,
+    ENEM_STATE_NULL,
     ENEM_STATE_INACTIVO,
     ENEM_STATE_ESCONDIDO,
     ENEM_STATE_CORRIENDO_X,
     ENEM_STATE_CORRIENDO_Y,
-	ENEM_STATE_OUT
+    ENEM_STATE_OUT
 } Enemigo_Estado;
 
 typedef struct {
@@ -20,13 +20,15 @@ typedef struct {
     Vector2 objetivo;
     double esperar_hasta;
     Vector2 coordenadas;
-	int velocidad;
+    int velocidad;
     CollisionBox colisiones;
     Dibujo *dib;
-	Escondite *esc;
-	ListaEscondites *le;
+    Escondite *esc;
+    ListaEscondites *le;
 } Enemigo;
 
 void Enemigo_Update(Enemigo *e, float now, float frame_time);
 
 void Enemigo_DibujarVarios(Enemigo *e, size_t cantidad);
+
+void Enemigo_Reset(Enemigo *e);

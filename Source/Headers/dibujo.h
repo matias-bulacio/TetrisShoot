@@ -9,3 +9,4 @@ typedef struct {
 
 Dibujo LoadDibujoFromCenteredImage(Image i);
 void Dibujar(Dibujo *d, Vector2 coordenadas);
+void ResetDibujo(Dibujo *d);

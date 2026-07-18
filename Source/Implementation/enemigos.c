@@ -47,8 +47,7 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
         break;
     case ENEM_STATE_ESCONDIDO:
         if (now > e->esperar_hasta) {
-            Escondite *esc =
-                PrimerEsconditeLibreDetrasDeY(e->le, e->coordenadas.y);
+            Escondite *esc = SiguienteEscondite(e->le, e->coordenadas);
             if (esc == NULL)
                 break;
 
@@ -62,15 +61,6 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
         break;
     case ENEM_STATE_OUT:
         break;
-    }
-}
-
-void Enemigo_DibujarVarios(Enemigo *earr, size_t cantidad) {
-    for (size_t i = 0; i < cantidad; i++) {
-        Enemigo *e = &earr[i];
-        if (e->estado != ENEM_STATE_NULL && e->estado != ENEM_STATE_INACTIVO &&
-            e->estado != ENEM_STATE_OUT)
-            Dibujar(e->dib, e->coordenadas);
     }
 }
 

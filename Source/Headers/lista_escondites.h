@@ -10,6 +10,6 @@ typedef struct {
 ListaEscondites NewListaEscondites(size_t cant);
 void FreeListaEscondites(ListaEscondites *le);
 Escondite *PrimerEsconditeLibre(ListaEscondites *le);
-Escondite *PrimerEsconditeLibreDetrasDeY(ListaEscondites *le, int min_y);
+Escondite *SiguienteEscondite(ListaEscondites *le, Vector2 coords);
 
 void Dibujar_ListaEscondites(ListaEscondites *lesc);

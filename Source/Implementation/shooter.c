@@ -88,7 +88,7 @@ int setup_shooter() {
     }
     for (size_t i = 5; i < 10; i++) {
         Escondite *esc = lesc.arr + i;
-        esc->coordinates.y = SCREEN_SHOOTER_HEIGHT + 100;
+        esc->coordinates.y = SCREEN_SHOOTER_HEIGHT + 200;
     }
     lesc.arr[5].coordinates.x = 60;
     lesc.arr[6].coordinates.x = 220;
@@ -99,7 +99,7 @@ int setup_shooter() {
     // Setup enemigos
 
     if (lenem.arr != NULL)
-        free(lenem.arr);
+        MemFree(lenem.arr);
     lenem = NewListaEnemigos(5);
 
     if (lenem.arr == NULL) {

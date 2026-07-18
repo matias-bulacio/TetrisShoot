@@ -1,9 +1,9 @@
 #pragma once
 
-#include "escondite.h"
-#include "lista_escondites.h"
 #include <collision.h>
 #include <dibujo.h>
+#include <escondite.h>
+#include <lista_escondites.h>
 #include <raylib.h>
 #include <stddef.h>
 typedef enum {
@@ -28,7 +28,5 @@ typedef struct {
 } Enemigo;
 
 void Enemigo_Update(Enemigo *e, float now, float frame_time);
-
-void Enemigo_DibujarVarios(Enemigo *e, size_t cantidad);
 
 void Enemigo_Reset(Enemigo *e);

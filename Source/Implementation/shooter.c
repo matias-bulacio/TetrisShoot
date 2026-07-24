@@ -94,7 +94,7 @@ int setup_shooter() {
     // Setup enemigos
 
     FreeListaEnemigos(&lenem);
-    lenem = NewListaEnemigos(5);
+    lenem = NewListaEnemigos(6);
 
     if (lenem.arr == NULL) {
         return -1; // Error
@@ -112,7 +112,7 @@ int setup_shooter() {
         };
         e->le = &lesc;
         e->dib = &dib_enemigo;
-        e->velocidad = GetRandomValue(110, 200);
+        e->velocidad = GetRandomValue(195, 300);
         e->lexits = &lexits;
     }
     return 0;
@@ -129,7 +129,7 @@ int shooter(bool setup) {
     float now = GetTime();
 
     // Input y cálculo
-    int movimiento_pistola = delta * 400 *
+    int movimiento_pistola = delta * 600 *
                              ((IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) -
                               (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)));
 

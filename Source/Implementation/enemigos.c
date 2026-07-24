@@ -2,7 +2,6 @@
 #include <escape.h>
 #include <raymath.h>
 #include <screen.h>
-#include <stddef.h>
 
 void Enemigo_Update(Enemigo *e, float now, float frame_time) {
     Vector2 obj;
@@ -14,14 +13,25 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
     case ENEM_STATE_INACTIVO:
         if (now > e->esperar_hasta) {
             e->esc = PrimerEsconditeLibre(e->le);
-            if (e->esc == NULL)
+            if (e->esc) {
+                e->objetivo =
+                    Vector2Add(e->esc->zona_escondida, e->esc->coordinates);
+                e->coordenadas.x = e->objetivo.x;
+                e->esc->ocupado = true;
+                e->estado = ENEM_STATE_CORRIENDO_Y;
                 break;
-
-            e->objetivo =
-                Vector2Add(e->esc->zona_escondida, e->esc->coordinates);
-            e->coordenadas.x = e->objetivo.x;
-            e->esc->ocupado = true;
-            e->estado = ENEM_STATE_CORRIENDO_Y;
+            }
+            Escape *exit =
+                MejorEscape(e->lexits, GetRandomValue(0, SCREEN_SHOOTER_WIDTH));
+            if (exit) {
+                e->objetivo = (Vector2){
+                    .x = exit->x,
+                    .y = SCREEN_SHOOTER_HEIGHT + 200,
+                };
+                e->coordenadas.x = exit->x;
+                e->estado = ENEM_STATE_CORRIENDO_Y;
+                break;
+            }
         }
         break;
     case ENEM_STATE_CORRIENDO_X:
@@ -83,5 +93,5 @@ void Enemigo_Reset(Enemigo *e) {
     e->coordenadas.y = -100;
     if (e->esc)
         e->esc->ocupado = false;
-    e->velocidad = GetRandomValue(110, 200);
+    e->velocidad = GetRandomValue(195, 300);
 }

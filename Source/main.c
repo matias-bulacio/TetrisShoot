@@ -8,7 +8,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-int escena = 1;
+int escena = 0;
 bool ejecutar_setup_de_la_escena = true;
 
 void setup(void) {

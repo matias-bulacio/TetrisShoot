@@ -15,7 +15,7 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
             e->esc = PrimerEsconditeLibre(e->le);
             if (e->esc) {
                 e->objetivo =
-                    Vector2Add(e->esc->zona_escondida, e->esc->coordinates);
+                    Vector2Add(e->esc->zona_escondida, e->esc->coords);
                 e->coordenadas.x = e->objetivo.x;
                 e->esc->ocupado = true;
                 e->estado = ENEM_STATE_CORRIENDO_Y;
@@ -64,7 +64,7 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
                 e->esc->ocupado = false;
                 e->esc = esc;
                 e->objetivo =
-                    Vector2Add(e->esc->zona_escondida, e->esc->coordinates);
+                    Vector2Add(e->esc->zona_escondida, e->esc->coords);
                 e->esc->ocupado = true;
                 e->estado = ENEM_STATE_CORRIENDO_X;
                 break;

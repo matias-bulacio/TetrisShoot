@@ -6,7 +6,7 @@
 
 typedef struct {
     CollisionBox collision;
-    Vector2 coordinates;
+    Vector2 coords;
     Dibujo *dib;
     Vector2 zona_escondida;
     bool ocupado;

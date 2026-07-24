@@ -28,16 +28,14 @@ Escondite *PrimerEsconditeLibre(ListaEscondites *lesc) {
 Escondite *SiguienteEscondite(ListaEscondites *lesc, Vector2 coords) {
     Escondite *esc = NULL;
     for (size_t i = 0; i < lesc->cantidad; i++) {
-        if (lesc->arr[i].zona_escondida.y + lesc->arr[i].coordinates.y <=
-            coords.y)
+        if (lesc->arr[i].zona_escondida.y + lesc->arr[i].coords.y <= coords.y)
             continue;
         if (lesc->arr[i].ocupado)
             continue;
 
-        if (!esc ||
-            (fabsf(esc->zona_escondida.x + esc->coordinates.x - coords.x) >
-             fabsf(lesc->arr[i].zona_escondida.x + lesc->arr[i].coordinates.x +
-                   -coords.x)))
+        if (!esc || (fabsf(esc->zona_escondida.x + esc->coords.x - coords.x) >
+                     fabsf(lesc->arr[i].zona_escondida.x +
+                           lesc->arr[i].coords.x + -coords.x)))
             esc = lesc->arr + i;
     }
     return esc;
@@ -45,6 +43,6 @@ Escondite *SiguienteEscondite(ListaEscondites *lesc, Vector2 coords) {
 
 void Dibujar_ListaEscondites(ListaEscondites *lesc) {
     for (size_t i = 0; i < lesc->cantidad; i++) {
-        Dibujar(lesc->arr[i].dib, lesc->arr[i].coordinates);
+        Dibujar(lesc->arr[i].dib, lesc->arr[i].coords);
     }
 }

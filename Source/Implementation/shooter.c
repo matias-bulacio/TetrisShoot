@@ -2,6 +2,7 @@
 #include <enemigos.h>
 #include <escape.h>
 #include <estadisticas.h>
+#include <lista_dibujos.h>
 #include <lista_enemigos.h>
 #include <lista_escondites.h>
 #include <raylib.h>
@@ -23,6 +24,7 @@ ListaEnemigos lenem;
 ListaEscondites lesc;
 ListaEscondites escondites_ganadores;
 ListaEscapes lexits;
+ListaDibujosEnCapas ldib;
 
 Vector2 coordenadas_bala = {0, -100};
 bool mostrar_bala = false;
@@ -75,7 +77,7 @@ int setup_shooter() {
             .x = 0,
             .y = -50,
         };
-        esc->coordinates = (Vector2){
+        esc->coords = (Vector2){
             .x = 380 + 80 * (i % 2 == 0 ? i : -i),
             .y = 120 + 70 * i,
         };
@@ -115,6 +117,7 @@ int setup_shooter() {
         e->velocidad = GetRandomValue(195, 300);
         e->lexits = &lexits;
     }
+    ldib = NewListaDibujosEnCapas(11);
     return 0;
 }
 
@@ -163,7 +166,7 @@ int shooter(bool setup) {
 
     for (size_t i = 0; i < lesc.cantidad; i++) {
         if (DetectCollision(lesc.arr[i].collision, colisiones_bala,
-                            lesc.arr[i].coordinates, coordenadas_bala)) {
+                            lesc.arr[i].coords, coordenadas_bala)) {
             mostrar_bala = false;
             goto sin_bala;
         }
@@ -175,13 +178,24 @@ sin_bala:
     Update_ListaEnemigos(&lenem, now, delta);
 
     // Dibujado
+    ListaDibujosEnCapas_Reset(&ldib);
+    for (size_t i = 0; i < lenem.n; i++) {
+        Enemigo *e = &lenem.arr[i];
+        int layer =
+            e->coordenadas.y + e->dib->textura.height + e->dib->offset.y;
+        ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coordenadas);
+    }
+    for (size_t i = 0; i < lesc.cantidad; i++) {
+        Escondite *e = &lesc.arr[i];
+        int layer = e->coords.y + e->dib->textura.height + e->dib->offset.y;
+        ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coords);
+    }
 
     ClearBackground(BEIGE);
 
     DrawRectangle(0, 550, 832, 20, ColorAlpha(WHITE, 0.8));
 
-    Dibujar_ListaEnemigos(&lenem);
-    Dibujar_ListaEscondites(&lesc);
+    ListaDibujosEnCapas_Dibujar(&ldib);
 
     if (mostrar_bala)
         Dibujar(&dib_bala, coordenadas_bala);

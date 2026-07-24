@@ -18,6 +18,7 @@ Dibujo dib_enemigo;
 Dibujo dib_escondite;
 Dibujo dib_pistola;
 Dibujo dib_bala;
+Dibujo dib_fondo;
 
 ListaEnemigos lenem;
 
@@ -47,6 +48,7 @@ int setup_shooter() {
     ResetDibujo(&dib_pistola);
     ResetDibujo(&dib_bala);
     ResetDibujo(&dib_enemigo);
+    ResetDibujo(&dib_fondo);
     ResetDibujo(&dib_escondite);
 
     dib_pistola =
@@ -56,6 +58,10 @@ int setup_shooter() {
         Resources_LoadCenteredDibujo("Resources/Shooter/bala.png", 40, 45);
     dib_enemigo =
         Resources_LoadCenteredDibujo("Resources/Animals/tiger.png", 96, 96);
+
+    dib_fondo = Resources_LoadCenteredDibujo("Resources/Shooter/pasto.png",
+                                             SCREEN_SHOOTER_WIDTH,
+                                             SCREEN_SHOOTER_HEIGHT);
 
     Image image_escondite = GenImageColor(60, 20, BROWN);
     dib_escondite = LoadDibujoFromCenteredImage(image_escondite);
@@ -114,7 +120,7 @@ int setup_shooter() {
         };
         e->le = &lesc;
         e->dib = &dib_enemigo;
-        e->velocidad = GetRandomValue(195, 300);
+        e->velocidad = GetRandomValue(195, 260);
         e->lexits = &lexits;
     }
     ldib = NewListaDibujosEnCapas(11);
@@ -191,7 +197,8 @@ sin_bala:
         ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coords);
     }
 
-    ClearBackground(BEIGE);
+    Dibujar(&dib_fondo,
+            (Vector2){SCREEN_SHOOTER_WIDTH / 2., SCREEN_SHOOTER_HEIGHT / 2.});
 
     DrawRectangle(0, 550, 832, 20, ColorAlpha(WHITE, 0.8));
 

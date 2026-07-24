@@ -93,5 +93,5 @@ void Enemigo_Reset(Enemigo *e) {
     e->coordenadas.y = -100;
     if (e->esc)
         e->esc->ocupado = false;
-    e->velocidad = GetRandomValue(195, 300);
+    e->velocidad = GetRandomValue(195, 260);
 }

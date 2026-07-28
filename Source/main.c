@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <screen.h>
 #include <shooter.h>
+#include <creditos.h>
 #include <stdbool.h>
 #include <tetris.h>
 
@@ -29,6 +30,15 @@ void loop(void) {
     case 1:
         escena = shooter(ejecutar_setup_de_la_escena);
         ejecutar_setup_de_la_escena = escena != 1;
+        break;
+
+    /*case 2:
+        escena = menu(ejecutar_setup_de_la_escena);
+        ejecutar_setup_de_la_escena = escena != 2;
+        break;    */
+    case 3:
+        escena = creditos(ejecutar_setup_de_la_escena);
+        ejecutar_setup_de_la_escena = escena != 3;
         break;
     }
 }

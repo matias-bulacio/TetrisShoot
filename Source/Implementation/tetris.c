@@ -1,7 +1,7 @@
+#include <bloquescaida.h>
 #include <raylib.h>
 #include <resources.h>
 #include <tetris.h>
-#include <bloquescaida.h>
 
 #define SCREEN_WIDTH 630 // pantalla juego 832 640//480 600
 #define SCREEN_HEIGHT 630
@@ -10,15 +10,16 @@
 
 #define FILA 21
 #define COLUMN 16
-#define PIEZAS_MAX 7
 #define maxY 20
-#define FILAS_MAX 4
-#define COLUMNAS_MAX 4
 
 #define OPA CLITERAL(Color){230, 41, 55, 180} // Red
 
 Color board_color[FILA][COLUMN];
 Color color[7] = {RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, PINK};
+
+#define PIEZAS_MAX 7
+#define FILAS_MAX 4
+#define COLUMNAS_MAX 4
 
 int board[FILA][COLUMN] = {0};
 int bloque[PIEZAS_MAX][FILAS_MAX][COLUMNAS_MAX] = {
@@ -161,11 +162,9 @@ typedef struct // se define las variables para ppoder mover la pieza y se
 
 Piece block = {7, 0}; // la pieza empieza en la columna 7 y en la fila 0
 
-bool colisionanV(int rotacion, int num_pieza)
-{
+bool colisionanV(int rotacion, int num_pieza) {
     int (*arreglo_pieza)[4][4];
-    switch (rotacion)
-    {
+    switch (rotacion) {
     case 1:
         arreglo_pieza = &DERECHA1[num_pieza];
         break;

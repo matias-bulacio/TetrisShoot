@@ -1,3 +1,4 @@
+#include <bloquescaida.h>
 #include <collision.h>
 #include <enemigos.h>
 #include <escape.h>
@@ -13,12 +14,15 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <tetris.h>
 
 Dibujo dib_enemigo;
 Dibujo dib_escondite;
 Dibujo dib_pistola;
 Dibujo dib_bala;
 Dibujo dib_fondo;
+
+Dibujo dib_escondites[5];
 
 ListaEnemigos lenem;
 
@@ -40,6 +44,37 @@ Vector2 coord_pistola = {
     .x = SCREEN_SHOOTER_WIDTH / 2.,
     .y = SCREEN_SHOOTER_HEIGHT - 80,
 };
+
+Dibujo GetDibujoForTetrisPiece(enum Pieza p) {
+    switch (p) {
+    case PIEZA_CUADRADO:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/cuadrado.png",
+                                            2 * 32, 2 * 32);
+    case PIEZA_L:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/L.png", 2 * 32,
+                                            2 * 48);
+    case PIEZA_L_INVERTIDA:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/L_invertida.png",
+                                            2 * 48, 2 * 32);
+    case PIEZA_Z_INVERTIDA:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/Z_invertida.png",
+                                            32 * 2, 2 * 48);
+    case PIEZA_Z:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/Z.png", 2 * 48,
+                                            2 * 32);
+    case PIEZA_LINEA:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/linea.png",
+                                            2 * 64, 2 * 16);
+    case PIEZA_T:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/T.png", 2 * 48,
+                                            2 * 32);
+    default:
+        TraceLog(LOG_FATAL,
+                 "%s: Reached impossible state, unknown Tetris piece %d",
+                 __func__, (int)p);
+        exit(EXIT_FAILURE);
+    }
+}
 
 // Una función de setup que se llama la primera vez en cada escena
 int setup_shooter() {
@@ -72,20 +107,23 @@ int setup_shooter() {
     lesc = NewListaEscondites(5);
     for (size_t i = 0; i < lesc.cantidad; i++) {
         Escondite *esc = lesc.arr + i;
+        dib_escondites[i] = GetDibujoForTetrisPiece((enum Pieza)sig_piezas[i]);
+        esc->dib = &dib_escondites[i];
+        int h = esc->dib->textura.height;
+        int w = esc->dib->textura.width;
         esc->collision = (CollisionBox){
-            .up = -5,
-            .down = 5,
-            .left = -20,
-            .right = 20,
+            .up = -h / 2. + 4,
+            .down = h / 2. - 4,
+            .left = -w / 2. + 4,
+            .right = w / 2. - 4,
         };
-        esc->dib = &dib_escondite;
         esc->zona_escondida = (Vector2){
             .x = 0,
-            .y = -50,
+            .y = -h / 2. + 4 - 30 * 2 + 15,
         };
         esc->coords = (Vector2){
             .x = 380 + 80 * (i % 2 == 0 ? i : -i),
-            .y = 120 + 70 * i,
+            .y = 130 + 80 * i,
         };
     }
 

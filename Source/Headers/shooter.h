@@ -1,4 +1,50 @@
 #pragma once
 
+#include <screen.h>
 #include <stdbool.h>
 int shooter(bool setup);
+
+#define PISTOL_Y_COORD (SCREEN_SHOOTER_HEIGHT - 80)
+#define BULLET_Y_COORD (PISTOL_Y_COORD - 40)
+#define TETRIS_PIECES_SCALE 2
+
+#define OFF_SCREEN_TOP -100
+#define OFF_SCREEN_LEFT -100
+#define OFF_SCREEN_BOTTOM (SCREEN_SHOOTER_HEIGHT + 100)
+#define OFF_SCREEN_RIGHT (SCREEN_SHOOTER_WIDTH + 100)
+
+#define FINISH_LINE_COORD 550
+#define FINISH_LINE_WIDTH 20
+#define FINISH_LINE_OPACITY 0.8
+
+#define PISTOL_SPEED 600
+#define BULLET_SPEED 1600
+
+#define MIN_VELOCIDAD 195
+#define MAX_VELOCIDAD 260
+
+#define NUM_ENEMIGOS 6
+#define NUM_ESCONDITES 5
+#define NUM_ESCAPES 5
+
+#define FIRST_ESCAPE 60
+#define ESCAPE_STEP 160
+#define LAST_ESCAPE 780
+
+#define COLLISION_MARGIN 4
+
+#define PISTOL_PNG_X 35
+#define PISTOL_PNG_Y 150
+#define PISTOL_PNG_SIZE PISTOL_PNG_X, PISTOL_PNG_Y
+
+#define BULLET_PNG_X 40
+#define BULLET_PNG_Y 45
+#define BULLET_PNG_SIZE BULLET_PNG_X, BULLET_PNG_Y
+
+#define TIGER_PNG_X 96
+#define TIGER_PNG_Y 96
+#define TIGER_PNG_SIZE TIGER_PNG_X, TIGER_PNG_Y
+
+#define TEXT_POS_X 20
+#define TEXT_POS_Y 20
+#define TEXT_SIZE 24

@@ -12,6 +12,7 @@ int escena = 0;
 bool ejecutar_setup_de_la_escena = true;
 
 void setup(void) {
+	SetTraceLogLevel(LOG_WARNING);
     InitWindow(SCREEN_INIT_WIDTH, SCREEN_INIT_HEIGHT, "TetrisShoot");
 
     // InitAudioDevice();

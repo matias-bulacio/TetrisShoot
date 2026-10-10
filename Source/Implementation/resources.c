@@ -1,4 +1,5 @@
 #include <resources.h>
+#include <stdio.h>
 
 const char *ApplicationDirectory;
 bool initialized_resources = false;
@@ -19,4 +20,10 @@ Dibujo Resources_LoadCenteredDibujo(const char *path, size_t width,
     Image i = Resources_LoadImage(path);
     ImageResizeNN(&i, width, height);
     return LoadDibujoFromCenteredImage(i);
+}
+
+FILE *Resources_OpenFile(const char *path, const char *mode) {
+    if (!initialized_resources)
+        InitResources();
+    return fopen(TextFormat("%s%s", ApplicationDirectory, path), mode);
 }

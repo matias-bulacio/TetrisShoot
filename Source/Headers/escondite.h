@@ -8,6 +8,6 @@ typedef struct {
     CollisionBox collision;
     Vector2 coords;
     Dibujo *dib;
-    Vector2 zona_escondida;
+    float distancia_de_escondite;
     bool ocupado;
 } Escondite;

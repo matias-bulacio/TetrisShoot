@@ -6,7 +6,7 @@ int shooter(bool setup);
 
 #define PISTOL_Y_COORD (SCREEN_SHOOTER_HEIGHT - 80)
 #define BULLET_Y_COORD (PISTOL_Y_COORD - 40)
-#define TETRIS_PIECES_SCALE 2
+#define TETRIS_PIECES_SCALE 1.8
 
 #define OFF_SCREEN_TOP -100
 #define OFF_SCREEN_LEFT -100

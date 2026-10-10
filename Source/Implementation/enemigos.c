@@ -4,18 +4,21 @@
 #include <screen.h>
 
 void Enemigo_Update(Enemigo *e, float now, float frame_time) {
-    Vector2 obj;
+    Vector2 obj, zona_escondida;
     switch (e->estado) {
     case ENEM_STATE_NULL:
         e->esperar_hasta = now + GetRandomValue(2000, 6000) / 1000.;
+        e->coordenadas.y = -100;
+        e->coordenadas.x = -100;
+        e->velocidad = GetRandomValue(e->min_velocidad, e->max_velocidad);
         e->estado = ENEM_STATE_INACTIVO;
         break;
     case ENEM_STATE_INACTIVO:
         if (now > e->esperar_hasta) {
             e->esc = PrimerEsconditeLibre(e->le);
             if (e->esc) {
-                e->objetivo =
-                    Vector2Add(e->esc->zona_escondida, e->esc->coords);
+                zona_escondida = (Vector2){0, e->esc->distancia_de_escondite};
+                e->objetivo = Vector2Add(zona_escondida, e->esc->coords);
                 e->coordenadas.x = e->objetivo.x;
                 e->esc->ocupado = true;
                 e->estado = ENEM_STATE_CORRIENDO_Y;
@@ -63,8 +66,8 @@ void Enemigo_Update(Enemigo *e, float now, float frame_time) {
             if (esc) {
                 e->esc->ocupado = false;
                 e->esc = esc;
-                e->objetivo =
-                    Vector2Add(e->esc->zona_escondida, e->esc->coords);
+                zona_escondida = (Vector2){0, e->esc->distancia_de_escondite};
+                e->objetivo = Vector2Add(zona_escondida, e->esc->coords);
                 e->esc->ocupado = true;
                 e->estado = ENEM_STATE_CORRIENDO_X;
                 break;

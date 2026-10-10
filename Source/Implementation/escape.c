@@ -10,6 +10,8 @@ ListaEscapes NewListaEscapes(size_t n) {
 }
 
 void FreeListaEscapes(ListaEscapes *lexits) {
+    if (!lexits)
+        return;
     if (!lexits->arr)
         return;
 

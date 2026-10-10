@@ -10,6 +10,8 @@ ListaEscondites NewListaEscondites(size_t cant) {
 }
 
 void FreeListaEscondites(ListaEscondites *lesc) {
+    if (!lesc)
+        return;
     if (!lesc->arr)
         return;
 
@@ -18,6 +20,12 @@ void FreeListaEscondites(ListaEscondites *lesc) {
 }
 
 Escondite *PrimerEsconditeLibre(ListaEscondites *lesc) {
+    if (!lesc)
+        return NULL;
+
+    if (!lesc->arr)
+        return NULL;
+
     for (size_t i = 0; i < lesc->cantidad; i++) {
         if (lesc->arr[i].ocupado == false)
             return lesc->arr + i;
@@ -28,14 +36,14 @@ Escondite *PrimerEsconditeLibre(ListaEscondites *lesc) {
 Escondite *SiguienteEscondite(ListaEscondites *lesc, Vector2 coords) {
     Escondite *esc = NULL;
     for (size_t i = 0; i < lesc->cantidad; i++) {
-        if (lesc->arr[i].zona_escondida.y + lesc->arr[i].coords.y <= coords.y)
+        if (lesc->arr[i].distancia_de_escondite + lesc->arr[i].coords.y <=
+            coords.y)
             continue;
         if (lesc->arr[i].ocupado)
             continue;
 
-        if (!esc || (fabsf(esc->zona_escondida.x + esc->coords.x - coords.x) >
-                     fabsf(lesc->arr[i].zona_escondida.x +
-                           lesc->arr[i].coords.x + -coords.x)))
+        if (!esc || (fabsf(esc->coords.x - coords.x) >
+                     fabsf(lesc->arr[i].coords.x + -coords.x)))
             esc = lesc->arr + i;
     }
     return esc;

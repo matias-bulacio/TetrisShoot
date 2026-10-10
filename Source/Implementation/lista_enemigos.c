@@ -8,6 +8,8 @@ ListaEnemigos NewListaEnemigos(size_t n) {
 }
 
 void FreeListaEnemigos(ListaEnemigos *lenem) {
+    if (!lenem)
+        return;
     if (!lenem->arr)
         return;
 

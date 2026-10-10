@@ -10,24 +10,26 @@
 #include <resources.h>
 #include <screen.h>
 #include <shooter.h>
+#include <shooter_config.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <tetris.h>
 
-Dibujo dib_enemigo;
 Dibujo dib_pistola;
 Dibujo dib_bala;
 Dibujo dib_fondo;
 
 Dibujo dib_escondites[5];
 
-ListaEnemigos lenem;
+ListaEnemigos *lenem;
+ListaEscondites *lesc;
+ListaEscapes *lexits;
 
-ListaEscondites lesc;
-ListaEscapes lexits;
 ListaDibujosEnCapas ldib;
 
+int collision_margin;
 Vector2 coordenadas_bala = {0, OFF_SCREEN_TOP};
 bool mostrar_bala = false;
 CollisionBox colisiones_bala = (CollisionBox){
@@ -84,9 +86,11 @@ Dibujo GetDibujoForTetrisPiece(enum Pieza p) {
 int setup_shooter() {
     SetWindowSize(SCREEN_SHOOTER_WIDTH, SCREEN_SHOOTER_HEIGHT);
 
+    FILE *file_cfg = Resources_OpenFile("Resources/Shooter/config.ini", "r");
+    InitShooterConfig(file_cfg);
+
     ResetDibujo(&dib_pistola);
     ResetDibujo(&dib_bala);
-    ResetDibujo(&dib_enemigo);
     ResetDibujo(&dib_fondo);
 
     dib_pistola = Resources_LoadCenteredDibujo("Resources/Shooter/pistol.png",
@@ -94,8 +98,6 @@ int setup_shooter() {
 
     dib_bala = Resources_LoadCenteredDibujo("Resources/Shooter/bala.png",
                                             BULLET_PNG_SIZE);
-    dib_enemigo = Resources_LoadCenteredDibujo("Resources/Animals/tiger.png",
-                                               TIGER_PNG_SIZE);
 
     dib_fondo = Resources_LoadCenteredDibujo("Resources/Shooter/pasto.png",
                                              SCREEN_SHOOTER_WIDTH,
@@ -103,10 +105,17 @@ int setup_shooter() {
 
     // Setup escondites
 
-    FreeListaEscondites(&lesc);
-    lesc = NewListaEscondites(NUM_ESCONDITES);
-    for (size_t i = 0; i < lesc.cantidad; i++) {
-        Escondite *esc = lesc.arr + i;
+    FreeListaEscondites(lesc);
+    lesc = GetListaEscondites();
+    if (!lesc) {
+        TraceLog(LOG_FATAL,
+                 "Shooter scene. Bad escondites list from config. Aborting");
+        exit(EXIT_FAILURE);
+    }
+
+    collision_margin = *GetCollisionMargin();
+    for (size_t i = 0; i < lesc->cantidad; i++) {
+        Escondite *esc = lesc->arr + i;
 
         dib_escondites[i] = GetDibujoForTetrisPiece((enum Pieza)sig_piezas[i]);
         esc->dib = &dib_escondites[i];
@@ -114,55 +123,33 @@ int setup_shooter() {
         int w = esc->dib->textura.width;
 
         esc->collision = (CollisionBox){
-            .up = -h / 2. + COLLISION_MARGIN,
-            .down = h / 2. - COLLISION_MARGIN,
-            .left = -w / 2. + COLLISION_MARGIN,
-            .right = w / 2. - COLLISION_MARGIN,
-        };
-
-        esc->zona_escondida = (Vector2){
-            .x = 0,
-            .y = -h / 2. + COLLISION_MARGIN - 30 * 2 + 15,
-        };
-        esc->coords = (Vector2){
-            .x = 380 + 80 * (i % 2 == 0 ? i : -i),
-            .y = 130 + 80 * i,
+            .up = -h / 2. + collision_margin,
+            .down = h / 2. - collision_margin,
+            .left = -w / 2. + collision_margin,
+            .right = w / 2. - collision_margin,
         };
     }
 
     // Setup escapes
 
-    FreeListaEscapes(&lexits);
-    lexits = NewListaEscapes(NUM_ESCAPES);
-    lexits.arr[0].x = FIRST_ESCAPE;
-    lexits.arr[1].x = FIRST_ESCAPE + ESCAPE_STEP;
-    lexits.arr[2].x = LAST_ESCAPE - 2 * ESCAPE_STEP;
-    lexits.arr[3].x = LAST_ESCAPE - ESCAPE_STEP;
-    lexits.arr[4].x = LAST_ESCAPE;
+    FreeListaEscapes(lexits);
+    lexits = GetListaEscapes();
+    if (!lexits) {
+        TraceLog(LOG_FATAL,
+                 "Shooter scene. Bad escapes list from config. Aborting");
+        exit(EXIT_FAILURE);
+    }
 
     // Setup enemigos
 
-    FreeListaEnemigos(&lenem);
-    lenem = NewListaEnemigos(NUM_ENEMIGOS);
+    FreeListaEnemigos(lenem);
+    lenem = GetListaEnemigos();
 
-    if (lenem.arr == NULL) {
-        return -1; // Error
-    }
-
-    for (size_t i = 0; i < lenem.n; i++) {
-        Enemigo *e = &lenem.arr[i];
-        e->coordenadas.y = OFF_SCREEN_TOP;
-        e->coordenadas.x = 64 + 176 * i;
-        e->colisiones = (CollisionBox){
-            .left = -15,
-            .right = 15,
-            .up = -30,
-            .down = 30,
-        };
-        e->le = &lesc;
-        e->dib = &dib_enemigo;
-        e->velocidad = GetRandomValue(MIN_VELOCIDAD, MAX_VELOCIDAD);
-        e->lexits = &lexits;
+    for (size_t i = 0; i < lenem->n; i++) {
+        Enemigo *e = &lenem->arr[i];
+        e->estado = ENEM_STATE_NULL;
+        e->le = lesc;
+        e->lexits = lexits;
     }
     ldib = NewListaDibujosEnCapas(NUM_ESCONDITES + NUM_ENEMIGOS);
     return 0;
@@ -201,8 +188,8 @@ int shooter(bool setup) {
     if (!mostrar_bala)
         goto sin_bala;
 
-    for (size_t i = 0; i < lenem.n; i++) {
-        Enemigo *enem = &lenem.arr[i];
+    for (size_t i = 0; i < lenem->n; i++) {
+        Enemigo *enem = &lenem->arr[i];
         if (DetectCollision(enem->colisiones, colisiones_bala,
                             enem->coordenadas, coordenadas_bala)) {
             Enemigo_Reset(enem);
@@ -211,9 +198,9 @@ int shooter(bool setup) {
         }
     }
 
-    for (size_t i = 0; i < lesc.cantidad; i++) {
-        if (DetectCollision(lesc.arr[i].collision, colisiones_bala,
-                            lesc.arr[i].coords, coordenadas_bala)) {
+    for (size_t i = 0; i < lesc->cantidad; i++) {
+        if (DetectCollision(lesc->arr[i].collision, colisiones_bala,
+                            lesc->arr[i].coords, coordenadas_bala)) {
             mostrar_bala = false;
             goto sin_bala;
         }
@@ -221,19 +208,19 @@ int shooter(bool setup) {
 
 sin_bala:
 
-    ListaEnemigos_ResetOutOfBounds(&lenem, OFF_SCREEN_BOTTOM);
-    Update_ListaEnemigos(&lenem, now, delta);
+    ListaEnemigos_ResetOutOfBounds(lenem, OFF_SCREEN_BOTTOM);
+    Update_ListaEnemigos(lenem, now, delta);
 
     // Dibujado
     ListaDibujosEnCapas_Reset(&ldib);
-    for (size_t i = 0; i < lenem.n; i++) {
-        Enemigo *e = &lenem.arr[i];
+    for (size_t i = 0; i < lenem->n; i++) {
+        Enemigo *e = &lenem->arr[i];
         int layer =
             e->coordenadas.y + e->dib->textura.height + e->dib->offset.y;
         ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coordenadas);
     }
-    for (size_t i = 0; i < lesc.cantidad; i++) {
-        Escondite *e = &lesc.arr[i];
+    for (size_t i = 0; i < lesc->cantidad; i++) {
+        Escondite *e = &lesc->arr[i];
         int layer = e->coords.y + e->dib->textura.height + e->dib->offset.y;
         ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coords);
     }

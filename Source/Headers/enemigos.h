@@ -22,6 +22,8 @@ typedef struct {
     double esperar_hasta;
     Vector2 coordenadas;
     int velocidad;
+    int min_velocidad;
+    int max_velocidad;
     CollisionBox colisiones;
     Dibujo *dib;
     Escondite *esc;

@@ -1,5 +1,6 @@
 #include <ini.h>
 #include <resources.h>
+#include <screen.h>
 #include <shooter_config.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +12,9 @@ ListaEscapes lexits_cfg = {0};
 ListaEscondites lescs_cfg = {0};
 int collision_margin_cfg, standing_distance_cfg;
 
+int finish_line_w, finish_line_h;
+float opacity_finish_line;
+Dibujo dib_finish_line_cfg;
 Dibujo dib_tigre_cfg;
 
 // Compare if two strings are the same
@@ -24,6 +28,25 @@ bool str2int_or_log_err(const char *s, const char *n, const char *v, int *out) {
         return false;
     }
     return true;
+}
+
+int handler_func_finish_line(const char *n, const char *v) {
+    const char *s = "finish_line";
+    if (str_eq(n, "height")) {
+        return str2int_or_log_err(s, n, v, &finish_line_h);
+    }
+    if (str_eq(n, "width")) {
+        return str2int_or_log_err(s, n, v, &finish_line_w);
+    }
+    if (str_eq(n, "opacity")) {
+        int r = sscanf(v, "%f", &opacity_finish_line);
+        if (r != 1) {
+            TraceLog(LOG_ERROR, "Bad config on %s/%s = %s", s, n, v);
+            return false;
+        }
+        return true;
+    }
+    return false;
 }
 
 int handler_func_enemigos(const char *n, const char *v) {
@@ -209,6 +232,8 @@ int handler_func_tigre(const char *n, const char *v) {
 
 int handler_func(void *_, const char *s, const char *n, const char *v) {
     TraceLog(LOG_INFO, "Processing %s/%s = %s", s, n, v);
+    if (str_eq(s, "finish_line"))
+        return handler_func_finish_line(n, v);
     if (str_eq(s, "enemigos"))
         return handler_func_enemigos(n, v);
     if (str_eq(s, "escondites"))
@@ -224,6 +249,21 @@ ListaEnemigos *GetListaEnemigos() { return &lenems_cfg; }
 ListaEscondites *GetListaEscondites() { return &lescs_cfg; }
 ListaEscapes *GetListaEscapes() { return &lexits_cfg; }
 int *GetCollisionMargin() { return &collision_margin_cfg; }
+
+bool GetFromCfgFinishLine(Dibujo **d, Vector2 *out_coords) {
+    if (!out_coords)
+        return false;
+    if (!d)
+        return false;
+    Image i = GenImageColor(SCREEN_SHOOTER_WIDTH, finish_line_w,
+                            ColorAlpha(WHITE, opacity_finish_line));
+    ResetDibujo(&dib_finish_line_cfg);
+    dib_finish_line_cfg = LoadDibujoFromCenteredImage(i);
+    *d = &dib_finish_line_cfg;
+    out_coords->x = SCREEN_SHOOTER_WIDTH / 2.;
+    out_coords->y = finish_line_h + finish_line_w / 2.;
+    return true;
+}
 
 bool InitShooterConfig(FILE *ini) {
     TraceLog(LOG_INFO, "Reading configuration...");

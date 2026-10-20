@@ -11,3 +11,5 @@ ListaEnemigos *GetListaEnemigos();
 ListaEscapes *GetListaEscapes();
 ListaEscondites *GetListaEscondites();
 int *GetCollisionMargin();
+
+bool GetFromCfgFinishLine(Dibujo **d, Vector2 *out_coords);

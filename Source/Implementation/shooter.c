@@ -20,6 +20,8 @@
 Dibujo dib_pistola;
 Dibujo dib_bala;
 Dibujo dib_fondo;
+Dibujo *dib_finish_line;
+Vector2 coords_finish_line;
 
 Dibujo dib_escondites[5];
 
@@ -103,6 +105,11 @@ int setup_shooter() {
                                              SCREEN_SHOOTER_WIDTH,
                                              SCREEN_SHOOTER_HEIGHT);
 
+    if (!GetFromCfgFinishLine(&dib_finish_line, &coords_finish_line)) {
+        TraceLog(LOG_FATAL, "Shooter scene. Bad finish line dibujo.");
+        exit(EXIT_FAILURE);
+    }
+
     // Setup escondites
 
     FreeListaEscondites(lesc);
@@ -152,13 +159,13 @@ int setup_shooter() {
         e->lexits = lexits;
     }
     ldib = NewListaDibujosEnCapas(NUM_ESCONDITES + NUM_ENEMIGOS);
-    return 0;
+    return 1;
 }
 
 int shooter(bool setup) {
     if (setup) {
         int r = setup_shooter();
-        if (r != 0)
+        if (r != 1)
             return r;
     }
 
@@ -228,8 +235,7 @@ sin_bala:
     Dibujar(&dib_fondo,
             (Vector2){SCREEN_SHOOTER_WIDTH / 2., SCREEN_SHOOTER_HEIGHT / 2.});
 
-    DrawRectangle(0, FINISH_LINE_COORD, SCREEN_SHOOTER_WIDTH, FINISH_LINE_WIDTH,
-                  ColorAlpha(WHITE, FINISH_LINE_OPACITY));
+    Dibujar(dib_finish_line, coords_finish_line);
 
     ListaDibujosEnCapas_Dibujar(&ldib);
 

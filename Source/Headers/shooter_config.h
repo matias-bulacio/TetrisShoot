@@ -3,6 +3,7 @@
 #include <escape.h>
 #include <lista_enemigos.h>
 #include <lista_escondites.h>
+#include <shooter.h>
 #include <stdbool.h>
 #include <stdio.h>
 bool InitShooterConfig(FILE *ini);
@@ -13,3 +14,4 @@ ListaEscondites *GetListaEscondites();
 int *GetCollisionMargin();
 
 bool GetFromCfgFinishLine(Dibujo **d, Vector2 *out_coords);
+PistolData *GetFromCfgPistolData();

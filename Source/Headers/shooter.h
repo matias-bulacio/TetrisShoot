@@ -1,11 +1,17 @@
 #pragma once
 
+#include <dibujo.h>
 #include <screen.h>
 #include <stdbool.h>
 int shooter(bool setup);
 
-#define PISTOL_Y_COORD (SCREEN_SHOOTER_HEIGHT - 80)
-#define BULLET_Y_COORD (PISTOL_Y_COORD - 40)
+typedef struct PistolData {
+    Dibujo *dib;
+    int speed;
+    Vector2 coord;
+} PistolData;
+
+#define BULLET_Y_COORD 520
 #define TETRIS_PIECES_SCALE 1.8
 
 #define OFF_SCREEN_TOP -100
@@ -13,15 +19,10 @@ int shooter(bool setup);
 #define OFF_SCREEN_BOTTOM (SCREEN_SHOOTER_HEIGHT + 100)
 #define OFF_SCREEN_RIGHT (SCREEN_SHOOTER_WIDTH + 100)
 
-#define PISTOL_SPEED 600
 #define BULLET_SPEED 1600
 
 #define NUM_ENEMIGOS 6
 #define NUM_ESCONDITES 5
-
-#define PISTOL_PNG_X 35
-#define PISTOL_PNG_Y 150
-#define PISTOL_PNG_SIZE PISTOL_PNG_X, PISTOL_PNG_Y
 
 #define BULLET_PNG_X 40
 #define BULLET_PNG_Y 45

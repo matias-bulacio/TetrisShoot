@@ -5,8 +5,30 @@
 #include <stdio.h>
 #include <string.h>
 
+#define SNV_PARSE(s, n, v, str, cnt, ...)                                      \
+    do {                                                                       \
+        int r = sscanf((v), (str), __VA_ARGS__);                               \
+        if (r != (cnt)) {                                                      \
+            TraceLog(LOG_ERROR, "Bad config on %s/%s = %s", (s), (n), (v));    \
+            return false;                                                      \
+        }                                                                      \
+        return true;                                                           \
+    } while (0)
+
+#define SNV_PARSE_B(rval, s, n, v, str, cnt, ...)                              \
+    do {                                                                       \
+        int r = sscanf((v), (str), __VA_ARGS__);                               \
+        if (r != (cnt)) {                                                      \
+            TraceLog(LOG_ERROR, "Bad config on %s/%s = %s", (s), (n), (v));    \
+            rval = false;                                                      \
+            break;                                                             \
+        }                                                                      \
+        rval = true;                                                           \
+    } while (0)
+
 ini_handler handler;
 
+PistolData pistol_data_cfg = {0};
 ListaEnemigos lenems_cfg = {0};
 ListaEscapes lexits_cfg = {0};
 ListaEscondites lescs_cfg = {0};
@@ -16,27 +38,48 @@ int finish_line_w, finish_line_h;
 float opacity_finish_line;
 Dibujo dib_finish_line_cfg;
 Dibujo dib_tigre_cfg;
+Dibujo dib_pistol_cfg;
 
 // Compare if two strings are the same
 // Returns true if so
 bool str_eq(const char *a, const char *b) { return strcmp(a, b) == 0; }
 
 bool str2int_or_log_err(const char *s, const char *n, const char *v, int *out) {
-    int r = sscanf(v, "%d", out);
-    if (r != 1) {
-        TraceLog(LOG_ERROR, "Bad config on %s/%s = %s", s, n, v);
-        return false;
+    SNV_PARSE(s, n, v, "%d", 1, out);
+}
+
+int handler_func_pistol(const char *n, const char *v) {
+    const char *s = "pistol";
+    if (str_eq(n, "speed"))
+        SNV_PARSE(s, n, v, "%d", 1, &pistol_data_cfg.speed);
+    if (str_eq(n, "height")) {
+        pistol_data_cfg.coord.x = SCREEN_SHOOTER_WIDTH / 2.;
+        SNV_PARSE(s, n, v, "%f", 1, &pistol_data_cfg.coord.y);
     }
-    return true;
+    if (str_eq(n, "sprite")) {
+        int x, y;
+        char path[1024];
+        bool ok;
+
+        SNV_PARSE_B(ok, s, n, v, "%dx%d,%1023s", 3, &x, &y, path);
+        if (!ok)
+            return false;
+
+        dib_pistol_cfg = Resources_LoadCenteredDibujo(path, x, y);
+        pistol_data_cfg.dib = &dib_pistol_cfg;
+
+        return true;
+    }
+    return false;
 }
 
 int handler_func_finish_line(const char *n, const char *v) {
     const char *s = "finish_line";
     if (str_eq(n, "height")) {
-        return str2int_or_log_err(s, n, v, &finish_line_h);
+        SNV_PARSE(s, n, v, "%d", 1, &finish_line_h);
     }
     if (str_eq(n, "width")) {
-        return str2int_or_log_err(s, n, v, &finish_line_w);
+        SNV_PARSE(s, n, v, "%d", 1, &finish_line_w);
     }
     if (str_eq(n, "opacity")) {
         int r = sscanf(v, "%f", &opacity_finish_line);
@@ -71,7 +114,7 @@ int handler_func_escondites(const char *n, const char *v) {
         return true;
     }
     if (str_eq(n, "collisionMargin")) {
-        return str2int_or_log_err(s, n, v, &collision_margin_cfg);
+        SNV_PARSE(s, n, v, "%d", 1, &collision_margin_cfg);
     }
     if (str_eq(n, "standingDistance")) {
         if (!str2int_or_log_err(s, n, v, &standing_distance_cfg)) {
@@ -232,6 +275,8 @@ int handler_func_tigre(const char *n, const char *v) {
 
 int handler_func(void *_, const char *s, const char *n, const char *v) {
     TraceLog(LOG_INFO, "Processing %s/%s = %s", s, n, v);
+    if (str_eq(s, "pistol"))
+        return handler_func_pistol(n, v);
     if (str_eq(s, "finish_line"))
         return handler_func_finish_line(n, v);
     if (str_eq(s, "enemigos"))
@@ -264,6 +309,8 @@ bool GetFromCfgFinishLine(Dibujo **d, Vector2 *out_coords) {
     out_coords->y = finish_line_h + finish_line_w / 2.;
     return true;
 }
+
+PistolData *GetFromCfgPistolData() { return &pistol_data_cfg; }
 
 bool InitShooterConfig(FILE *ini) {
     TraceLog(LOG_INFO, "Reading configuration...");

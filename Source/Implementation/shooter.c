@@ -17,7 +17,8 @@
 #include <stdlib.h>
 #include <tetris.h>
 
-Dibujo dib_pistola;
+PistolData *pistol_data;
+
 Dibujo dib_bala;
 Dibujo dib_fondo;
 Dibujo *dib_finish_line;
@@ -39,11 +40,6 @@ CollisionBox colisiones_bala = (CollisionBox){
     .right = 16,
     .down = 18,
     .up = -18,
-};
-
-Vector2 coord_pistola = {
-    .x = SCREEN_SHOOTER_WIDTH / 2.,
-    .y = PISTOL_Y_COORD,
 };
 
 Dibujo GetDibujoForTetrisPiece(enum Pieza p) {
@@ -91,12 +87,8 @@ int setup_shooter() {
     FILE *file_cfg = Resources_OpenFile("Resources/Shooter/config.ini", "r");
     InitShooterConfig(file_cfg);
 
-    ResetDibujo(&dib_pistola);
     ResetDibujo(&dib_bala);
     ResetDibujo(&dib_fondo);
-
-    dib_pistola = Resources_LoadCenteredDibujo("Resources/Shooter/pistol.png",
-                                               PISTOL_PNG_SIZE);
 
     dib_bala = Resources_LoadCenteredDibujo("Resources/Shooter/bala.png",
                                             BULLET_PNG_SIZE);
@@ -107,6 +99,12 @@ int setup_shooter() {
 
     if (!GetFromCfgFinishLine(&dib_finish_line, &coords_finish_line)) {
         TraceLog(LOG_FATAL, "Shooter scene. Bad finish line dibujo.");
+        exit(EXIT_FAILURE);
+    }
+
+    pistol_data = GetFromCfgPistolData();
+    if (!pistol_data) {
+        TraceLog(LOG_FATAL, "Shooter scene. Bad pistol data.");
         exit(EXIT_FAILURE);
     }
 
@@ -173,11 +171,11 @@ int shooter(bool setup) {
     float now = GetTime();
 
     // Input y cálculo
-    int movimiento_pistola = delta * PISTOL_SPEED *
+    int movimiento_pistola = delta * pistol_data->speed *
                              ((IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) -
                               (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)));
 
-    coord_pistola.x += movimiento_pistola;
+    pistol_data->coord.x += movimiento_pistola;
     if (mostrar_bala) {
         coordenadas_bala.y -= BULLET_SPEED * delta;
     }
@@ -185,7 +183,7 @@ int shooter(bool setup) {
     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W) ||
         IsKeyPressed(KEY_SPACE)) {
         mostrar_bala = true;
-        coordenadas_bala.x = coord_pistola.x;
+        coordenadas_bala.x = pistol_data->coord.x;
         coordenadas_bala.y = BULLET_Y_COORD;
     }
 
@@ -242,7 +240,7 @@ sin_bala:
     if (mostrar_bala)
         Dibujar(&dib_bala, coordenadas_bala);
 
-    Dibujar(&dib_pistola, coord_pistola);
+    Dibujar(pistol_data->dib, pistol_data->coord);
 
     DrawText(TextFormat("Vida: %u", vida), TEXT_POS_X, TEXT_POS_Y, TEXT_SIZE,
              WHITE);

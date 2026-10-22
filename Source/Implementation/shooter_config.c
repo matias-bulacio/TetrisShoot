@@ -28,6 +28,7 @@
 
 ini_handler handler;
 
+BulletData bullet_data_cfg = {0};
 PistolData pistol_data_cfg = {0};
 ListaEnemigos lenems_cfg = {0};
 ListaEscapes lexits_cfg = {0};
@@ -39,6 +40,7 @@ float opacity_finish_line;
 Dibujo dib_finish_line_cfg;
 Dibujo dib_tigre_cfg;
 Dibujo dib_pistol_cfg;
+Dibujo dib_bullet_cfg;
 
 // Compare if two strings are the same
 // Returns true if so
@@ -46,6 +48,43 @@ bool str_eq(const char *a, const char *b) { return strcmp(a, b) == 0; }
 
 bool str2int_or_log_err(const char *s, const char *n, const char *v, int *out) {
     SNV_PARSE(s, n, v, "%d", 1, out);
+}
+
+int handler_func_bullet(const char *n, const char *v) {
+    const char *s = "bullet";
+    if (str_eq(n, "height"))
+        SNV_PARSE(s, n, v, "%d", 1, &bullet_data_cfg.shooting_height);
+    if (str_eq(n, "speed"))
+        SNV_PARSE(s, n, v, "%d", 1, &bullet_data_cfg.speed);
+    if (str_eq(n, "sprite")) {
+        int x, y;
+        char path[1024];
+        bool ok;
+
+        SNV_PARSE_B(ok, s, n, v, "%dx%d,%1023s", 3, &x, &y, path);
+        if (!ok)
+            return false;
+
+        dib_bullet_cfg = Resources_LoadCenteredDibujo(path, x, y);
+        bullet_data_cfg.dib = &dib_bullet_cfg;
+        bullet_data_cfg.show = false;
+
+        return true;
+    }
+    if (str_eq(n, "collisionBox")) {
+        CollisionBox cb;
+        int r = sscanf(v, "%f,%f,%f,%f", &cb.left, &cb.up, &cb.right, &cb.down);
+        if (r != 4) {
+            TraceLog(LOG_ERROR,
+                     "Bad config. collisionBox property on section bullet "
+                     "expects the format '<left>,<up>,<right>,<down>'.");
+            return false;
+        }
+
+        bullet_data_cfg.col = cb;
+        return true;
+    }
+    return false;
 }
 
 int handler_func_pistol(const char *n, const char *v) {
@@ -275,6 +314,8 @@ int handler_func_tigre(const char *n, const char *v) {
 
 int handler_func(void *_, const char *s, const char *n, const char *v) {
     TraceLog(LOG_INFO, "Processing %s/%s = %s", s, n, v);
+    if (str_eq(s, "bullet"))
+        return handler_func_bullet(n, v);
     if (str_eq(s, "pistol"))
         return handler_func_pistol(n, v);
     if (str_eq(s, "finish_line"))
@@ -311,6 +352,7 @@ bool GetFromCfgFinishLine(Dibujo **d, Vector2 *out_coords) {
 }
 
 PistolData *GetFromCfgPistolData() { return &pistol_data_cfg; }
+BulletData *GetFromCfgBulletData() { return &bullet_data_cfg; }
 
 bool InitShooterConfig(FILE *ini) {
     TraceLog(LOG_INFO, "Reading configuration...");

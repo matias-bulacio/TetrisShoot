@@ -15,3 +15,4 @@ int *GetCollisionMargin();
 
 bool GetFromCfgFinishLine(Dibujo **d, Vector2 *out_coords);
 PistolData *GetFromCfgPistolData();
+BulletData *GetFromCfgBulletData();

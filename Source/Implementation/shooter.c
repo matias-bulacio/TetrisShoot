@@ -18,8 +18,8 @@
 #include <tetris.h>
 
 PistolData *pistol_data;
+BulletData *bullet_data;
 
-Dibujo dib_bala;
 Dibujo dib_fondo;
 Dibujo *dib_finish_line;
 Vector2 coords_finish_line;
@@ -33,14 +33,6 @@ ListaEscapes *lexits;
 ListaDibujosEnCapas ldib;
 
 int collision_margin;
-Vector2 coordenadas_bala = {0, OFF_SCREEN_TOP};
-bool mostrar_bala = false;
-CollisionBox colisiones_bala = (CollisionBox){
-    .left = -16,
-    .right = 16,
-    .down = 18,
-    .up = -18,
-};
 
 Dibujo GetDibujoForTetrisPiece(enum Pieza p) {
     switch (p) {
@@ -87,11 +79,7 @@ int setup_shooter() {
     FILE *file_cfg = Resources_OpenFile("Resources/Shooter/config.ini", "r");
     InitShooterConfig(file_cfg);
 
-    ResetDibujo(&dib_bala);
     ResetDibujo(&dib_fondo);
-
-    dib_bala = Resources_LoadCenteredDibujo("Resources/Shooter/bala.png",
-                                            BULLET_PNG_SIZE);
 
     dib_fondo = Resources_LoadCenteredDibujo("Resources/Shooter/pasto.png",
                                              SCREEN_SHOOTER_WIDTH,
@@ -105,6 +93,12 @@ int setup_shooter() {
     pistol_data = GetFromCfgPistolData();
     if (!pistol_data) {
         TraceLog(LOG_FATAL, "Shooter scene. Bad pistol data.");
+        exit(EXIT_FAILURE);
+    }
+
+    bullet_data = GetFromCfgBulletData();
+    if (!bullet_data) {
+        TraceLog(LOG_FATAL, "Shooter scene. Bad bullet data.");
         exit(EXIT_FAILURE);
     }
 
@@ -176,37 +170,37 @@ int shooter(bool setup) {
                               (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)));
 
     pistol_data->coord.x += movimiento_pistola;
-    if (mostrar_bala) {
-        coordenadas_bala.y -= BULLET_SPEED * delta;
+    if (bullet_data->show) {
+        bullet_data->coord.y -= bullet_data->speed * delta;
     }
 
     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W) ||
         IsKeyPressed(KEY_SPACE)) {
-        mostrar_bala = true;
-        coordenadas_bala.x = pistol_data->coord.x;
-        coordenadas_bala.y = BULLET_Y_COORD;
+        bullet_data->show = true;
+        bullet_data->coord.x = pistol_data->coord.x;
+        bullet_data->coord.y = bullet_data->shooting_height;
     }
 
-    if (coordenadas_bala.y < OFF_SCREEN_TOP)
-        mostrar_bala = false;
+    if (bullet_data->coord.y < OFF_SCREEN_TOP)
+        bullet_data->show = false;
 
-    if (!mostrar_bala)
+    if (!bullet_data->show)
         goto sin_bala;
 
     for (size_t i = 0; i < lenem->n; i++) {
         Enemigo *enem = &lenem->arr[i];
-        if (DetectCollision(enem->colisiones, colisiones_bala,
-                            enem->coordenadas, coordenadas_bala)) {
+        if (DetectCollision(enem->colisiones, bullet_data->col,
+                            enem->coordenadas, bullet_data->coord)) {
             Enemigo_Reset(enem);
-            mostrar_bala = false;
+            bullet_data->show = false;
             goto sin_bala;
         }
     }
 
     for (size_t i = 0; i < lesc->cantidad; i++) {
-        if (DetectCollision(lesc->arr[i].collision, colisiones_bala,
-                            lesc->arr[i].coords, coordenadas_bala)) {
-            mostrar_bala = false;
+        if (DetectCollision(lesc->arr[i].collision, bullet_data->col,
+                            lesc->arr[i].coords, bullet_data->coord)) {
+            bullet_data->show = false;
             goto sin_bala;
         }
     }
@@ -237,8 +231,8 @@ sin_bala:
 
     ListaDibujosEnCapas_Dibujar(&ldib);
 
-    if (mostrar_bala)
-        Dibujar(&dib_bala, coordenadas_bala);
+    if (bullet_data->show)
+        Dibujar(bullet_data->dib, bullet_data->coord);
 
     Dibujar(pistol_data->dib, pistol_data->coord);
 

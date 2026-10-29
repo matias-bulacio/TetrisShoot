@@ -2,6 +2,8 @@
 #include <raylib.h>
 #include <resources.h>
 #include <tetris.h>
+#include <bloquescaida.h>
+#include <bloques_tetris.h>
 
 #define SCREEN_WIDTH 630 // pantalla juego 832 640//480 600
 #define SCREEN_HEIGHT 630
@@ -1019,6 +1021,7 @@ int tetris(bool setup)
         else if (GetTime() > game_over_time + 3)
         {
             return 1;
+           
         }
         //////
     }

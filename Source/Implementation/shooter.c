@@ -1,127 +1,163 @@
+#include <bloquescaida.h>
 #include <collision.h>
 #include <enemigos.h>
 #include <escape.h>
 #include <estadisticas.h>
+#include <lista_dibujos.h>
 #include <lista_enemigos.h>
 #include <lista_escondites.h>
 #include <raylib.h>
 #include <resources.h>
 #include <screen.h>
 #include <shooter.h>
+#include <shooter_config.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <tetris.h>
 
-Dibujo dib_enemigo;
-Dibujo dib_escondite;
-Dibujo dib_pistola;
-Dibujo dib_bala;
+PistolData *pistol_data;
+BulletData *bullet_data;
 
-ListaEnemigos lenem;
+Dibujo dib_fondo;
+Dibujo *dib_finish_line;
+Vector2 coords_finish_line;
 
-ListaEscondites lesc;
-ListaEscondites escondites_ganadores;
-ListaEscapes lexits;
+Dibujo dib_escondites[5];
 
-Vector2 coordenadas_bala = {0, -100};
-bool mostrar_bala = false;
-CollisionBox colisiones_bala = (CollisionBox){
-    .left = -16,
-    .right = 16,
-    .down = 18,
-    .up = -18,
-};
+ListaEnemigos *lenem;
+ListaEscondites *lesc;
+ListaEscapes *lexits;
 
-Vector2 coord_pistola = {
-    .x = SCREEN_SHOOTER_WIDTH / 2.,
-    .y = SCREEN_SHOOTER_HEIGHT - 80,
-};
+ListaDibujosEnCapas ldib;
+
+int collision_margin;
+
+Dibujo GetDibujoForTetrisPiece(enum Pieza p) {
+    switch (p) {
+    case PIEZA_CUADRADO:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/cuadrado.png",
+                                            TETRIS_PIECES_SCALE * 32,
+                                            TETRIS_PIECES_SCALE * 32);
+    case PIEZA_L:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/L.png",
+                                            TETRIS_PIECES_SCALE * 32,
+                                            TETRIS_PIECES_SCALE * 48);
+    case PIEZA_L_INVERTIDA:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/L_invertida.png",
+                                            TETRIS_PIECES_SCALE * 48,
+                                            TETRIS_PIECES_SCALE * 32);
+    case PIEZA_Z_INVERTIDA:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/Z_invertida.png",
+                                            TETRIS_PIECES_SCALE * 32,
+                                            TETRIS_PIECES_SCALE * 48);
+    case PIEZA_Z:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/Z.png",
+                                            TETRIS_PIECES_SCALE * 48,
+                                            TETRIS_PIECES_SCALE * 32);
+    case PIEZA_LINEA:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/linea.png",
+                                            TETRIS_PIECES_SCALE * 64,
+                                            TETRIS_PIECES_SCALE * 16);
+    case PIEZA_T:
+        return Resources_LoadCenteredDibujo("Resources/Tetris/T.png",
+                                            TETRIS_PIECES_SCALE * 48,
+                                            TETRIS_PIECES_SCALE * 32);
+    default:
+        TraceLog(LOG_FATAL,
+                 "%s: Reached impossible state, unknown Tetris piece %d",
+                 __func__, (int)p);
+        exit(EXIT_FAILURE);
+    }
+}
 
 // Una función de setup que se llama la primera vez en cada escena
 int setup_shooter() {
     SetWindowSize(SCREEN_SHOOTER_WIDTH, SCREEN_SHOOTER_HEIGHT);
 
-    ResetDibujo(&dib_pistola);
-    ResetDibujo(&dib_bala);
-    ResetDibujo(&dib_enemigo);
-    ResetDibujo(&dib_escondite);
+    FILE *file_cfg = Resources_OpenFile("Resources/Shooter/config.ini", "r");
+    InitShooterConfig(file_cfg);
 
-    dib_pistola =
-        Resources_LoadCenteredDibujo("Resources/Shooter/pistol.png", 35, 150);
+    ResetDibujo(&dib_fondo);
 
-    dib_bala =
-        Resources_LoadCenteredDibujo("Resources/Shooter/bala.png", 40, 45);
-    dib_enemigo =
-        Resources_LoadCenteredDibujo("Resources/Animals/tiger.png", 96, 96);
+    dib_fondo = Resources_LoadCenteredDibujo("Resources/Shooter/pasto.png",
+                                             SCREEN_SHOOTER_WIDTH,
+                                             SCREEN_SHOOTER_HEIGHT);
 
-    Image image_escondite = GenImageColor(60, 20, BROWN);
-    dib_escondite = LoadDibujoFromCenteredImage(image_escondite);
+    if (!GetFromCfgFinishLine(&dib_finish_line, &coords_finish_line)) {
+        TraceLog(LOG_FATAL, "Shooter scene. Bad finish line dibujo.");
+        exit(EXIT_FAILURE);
+    }
+
+    pistol_data = GetFromCfgPistolData();
+    if (!pistol_data) {
+        TraceLog(LOG_FATAL, "Shooter scene. Bad pistol data.");
+        exit(EXIT_FAILURE);
+    }
+
+    bullet_data = GetFromCfgBulletData();
+    if (!bullet_data) {
+        TraceLog(LOG_FATAL, "Shooter scene. Bad bullet data.");
+        exit(EXIT_FAILURE);
+    }
 
     // Setup escondites
 
-    FreeListaEscondites(&lesc);
-    lesc = NewListaEscondites(5);
-    for (size_t i = 0; i < lesc.cantidad; i++) {
-        Escondite *esc = lesc.arr + i;
-        esc->collision = (CollisionBox){
-            .up = -5,
-            .down = 5,
-            .left = -20,
-            .right = 20,
-        };
-        esc->dib = &dib_escondite;
-        esc->zona_escondida = (Vector2){
-            .x = 0,
-            .y = -50,
-        };
-        esc->coordinates = (Vector2){
-            .x = 380 + 80 * (i % 2 == 0 ? i : -i),
-            .y = 120 + 70 * i,
+    FreeListaEscondites(lesc);
+    lesc = GetListaEscondites();
+    if (!lesc) {
+        TraceLog(LOG_FATAL,
+                 "Shooter scene. Bad escondites list from config. Aborting");
+        exit(EXIT_FAILURE);
+    }
+
+    collision_margin = *GetCollisionMargin();
+    for (size_t i = 0; i < lesc->n; i++) {
+        Escondite *esc = lesc->arr + i;
+
+        dib_escondites[i] = GetDibujoForTetrisPiece((enum Pieza)sig_piezas[i]);
+        esc->dib = &dib_escondites[i];
+        int h = esc->dib->textura.height;
+        int w = esc->dib->textura.width;
+
+        esc->col = (CollisionBox){
+            .up = -h / 2. + collision_margin,
+            .down = h / 2. - collision_margin,
+            .left = -w / 2. + collision_margin,
+            .right = w / 2. - collision_margin,
         };
     }
 
     // Setup escapes
 
-    FreeListaEscapes(&lexits);
-    lexits = NewListaEscapes(5);
-    lexits.arr[0].x = 60;
-    lexits.arr[1].x = 220;
-    lexits.arr[2].x = 460;
-    lexits.arr[3].x = 620;
-    lexits.arr[4].x = 780;
+    FreeListaEscapes(lexits);
+    lexits = GetListaEscapes();
+    if (!lexits) {
+        TraceLog(LOG_FATAL,
+                 "Shooter scene. Bad escapes list from config. Aborting");
+        exit(EXIT_FAILURE);
+    }
 
     // Setup enemigos
 
-    FreeListaEnemigos(&lenem);
-    lenem = NewListaEnemigos(6);
+    FreeListaEnemigos(lenem);
+    lenem = GetListaEnemigos();
 
-    if (lenem.arr == NULL) {
-        return -1; // Error
+    for (size_t i = 0; i < lenem->n; i++) {
+        Enemigo *e = &lenem->arr[i];
+        e->estado = ENEM_STATE_NULL;
+        e->lesc = lesc;
+        e->lexit = lexits;
     }
-
-    for (size_t i = 0; i < lenem.n; i++) {
-        Enemigo *e = &lenem.arr[i];
-        e->coordenadas.y = -100;
-        e->coordenadas.x = 64 + 176 * i;
-        e->colisiones = (CollisionBox){
-            .left = -15,
-            .right = 15,
-            .up = -30,
-            .down = 30,
-        };
-        e->le = &lesc;
-        e->dib = &dib_enemigo;
-        e->velocidad = GetRandomValue(195, 300);
-        e->lexits = &lexits;
-    }
-    return 0;
+    ldib = NewListaDibujosEnCapas(NUM_ESCONDITES + NUM_ENEMIGOS);
+    return 1;
 }
 
 int shooter(bool setup) {
     if (setup) {
         int r = setup_shooter();
-        if (r != 0)
+        if (r != 1)
             return r;
     }
 
@@ -129,65 +165,77 @@ int shooter(bool setup) {
     float now = GetTime();
 
     // Input y cálculo
-    int movimiento_pistola = delta * 600 *
+    int movimiento_pistola = delta * pistol_data->speed *
                              ((IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) -
                               (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)));
 
-    coord_pistola.x += movimiento_pistola;
-    if (mostrar_bala) {
-        coordenadas_bala.y -= 1600 * delta;
+    pistol_data->coord.x += movimiento_pistola;
+    if (bullet_data->show) {
+        bullet_data->coord.y -= bullet_data->speed * delta;
     }
 
     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W) ||
         IsKeyPressed(KEY_SPACE)) {
-        mostrar_bala = true;
-        coordenadas_bala.x = coord_pistola.x;
-        coordenadas_bala.y = 520;
+        bullet_data->show = true;
+        bullet_data->coord.x = pistol_data->coord.x;
+        bullet_data->coord.y = bullet_data->shooting_height;
     }
 
-    if (coordenadas_bala.y < -50)
-        mostrar_bala = false;
+    if (bullet_data->coord.y < OFF_SCREEN_TOP)
+        bullet_data->show = false;
 
-    if (!mostrar_bala)
+    if (!bullet_data->show)
         goto sin_bala;
 
-    for (size_t i = 0; i < lenem.n; i++) {
-        Enemigo *enem = &lenem.arr[i];
-        if (DetectCollision(enem->colisiones, colisiones_bala,
-                            enem->coordenadas, coordenadas_bala)) {
+    for (size_t i = 0; i < lenem->n; i++) {
+        Enemigo *enem = &lenem->arr[i];
+        if (DetectCollision(enem->col, bullet_data->col, enem->coord,
+                            bullet_data->coord)) {
             Enemigo_Reset(enem);
-            mostrar_bala = false;
+            bullet_data->show = false;
             goto sin_bala;
         }
     }
 
-    for (size_t i = 0; i < lesc.cantidad; i++) {
-        if (DetectCollision(lesc.arr[i].collision, colisiones_bala,
-                            lesc.arr[i].coordinates, coordenadas_bala)) {
-            mostrar_bala = false;
+    for (size_t i = 0; i < lesc->n; i++) {
+        if (DetectCollision(lesc->arr[i].col, bullet_data->col,
+                            lesc->arr[i].coord, bullet_data->coord)) {
+            bullet_data->show = false;
             goto sin_bala;
         }
     }
 
 sin_bala:
 
-    ListaEnemigos_ResetOutOfBounds(&lenem, SCREEN_SHOOTER_HEIGHT + 100);
-    Update_ListaEnemigos(&lenem, now, delta);
+    ListaEnemigos_ResetOutOfBounds(lenem, OFF_SCREEN_BOTTOM);
+    Update_ListaEnemigos(lenem, now, delta);
 
     // Dibujado
+    ListaDibujosEnCapas_Reset(&ldib);
+    for (size_t i = 0; i < lenem->n; i++) {
+        Enemigo *e = &lenem->arr[i];
+        int layer = e->coord.y + e->dib->textura.height + e->dib->offset.y;
+        ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coord);
+    }
+    for (size_t i = 0; i < lesc->n; i++) {
+        Escondite *e = &lesc->arr[i];
+        int layer = e->coord.y + e->dib->textura.height + e->dib->offset.y;
+        ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coord);
+    }
 
-    ClearBackground(BEIGE);
+    Dibujar(&dib_fondo,
+            (Vector2){SCREEN_SHOOTER_WIDTH / 2., SCREEN_SHOOTER_HEIGHT / 2.});
 
-    DrawRectangle(0, 550, 832, 20, ColorAlpha(WHITE, 0.8));
+    Dibujar(dib_finish_line, coords_finish_line);
 
-    Dibujar_ListaEnemigos(&lenem);
-    Dibujar_ListaEscondites(&lesc);
+    ListaDibujosEnCapas_Dibujar(&ldib);
 
-    if (mostrar_bala)
-        Dibujar(&dib_bala, coordenadas_bala);
+    if (bullet_data->show)
+        Dibujar(bullet_data->dib, bullet_data->coord);
 
-    Dibujar(&dib_pistola, coord_pistola);
+    Dibujar(pistol_data->dib, pistol_data->coord);
 
-    DrawText(TextFormat("Vida: %u", vida), 20, 20, 24, BLACK);
+    DrawText(TextFormat("Vida: %u", vida), TEXT_POS_X, TEXT_POS_Y, TEXT_SIZE,
+             WHITE);
     return 1;
 }

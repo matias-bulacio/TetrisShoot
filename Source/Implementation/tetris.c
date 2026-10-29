@@ -1,3 +1,4 @@
+#include <bloquescaida.h>
 #include <raylib.h>
 #include <resources.h>
 #include <tetris.h>
@@ -9,8 +10,127 @@
 #define BLOCK_SIZE 30
 // hasta aca se crea una ventana de las dimensiones dichas
 
+#define FILA 21
+#define COLUMN 16
+#define maxY 20
 
 #define OPA CLITERAL(Color){230, 41, 55, 180} // Red
+
+Color board_color[FILA][COLUMN];
+Color color[7] = {RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, PINK};
+
+#define PIEZAS_MAX 7
+#define FILAS_MAX 4
+#define COLUMNAS_MAX 4
+
+int board[FILA][COLUMN] = {0};
+int bloque[PIEZAS_MAX][FILAS_MAX][COLUMNAS_MAX] = {
+    // 7 piezas, 4 filas, 4 columnas
+    {{1, 1, 0, 0},
+     {1, 1, 0, 0},
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}}, // cuadrado PIEZA 2
+
+    {{1, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, //---- PIEZA 1
+
+    {{0, 1, 0, 0}, {1, 1, 1, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, // T  PIEZA 3
+
+    {{1, 0, 0, 0},
+     {1, 1, 1, 0},
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}}, // L AL REVES PIEZA 4
+
+    {{0, 0, 1, 0}, {1, 1, 1, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, // L  PIEZA 5
+
+    {{1, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, // Z  pieza 6
+
+    {{0, 1, 1, 0},
+     {1, 1, 0, 0},
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}} // Z AL REVES   PIEZA 7
+
+};
+
+int DERECHA1[PIEZAS_MAX][FILAS_MAX][COLUMNAS_MAX] = {
+    // 7 piezas, 4 filas, 4 columnas
+    {{1, 1, 0, 0},
+     {1, 1, 0, 0},
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}}, // cuadrado PIEZA 2
+
+    {{0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}}, //---- PIEZA 1
+
+    {{0, 1, 0, 0}, {0, 1, 1, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}}, // T  PIEZA 3
+
+    {{0, 1, 1, 0},
+     {0, 1, 0, 0},
+     {0, 1, 0, 0},
+     {0, 0, 0, 0}}, // L AL REVES PIEZA 4
+
+    {{0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}}, // L  PIEZA 5
+
+    {{0, 1, 0, 0}, {1, 1, 0, 0}, {1, 0, 0, 0}, {0, 0, 0, 0}}, // Z  pieza 6
+
+    {{1, 0, 0, 0},
+     {1, 1, 0, 0},
+     {0, 1, 0, 0},
+     {0, 0, 0, 0}} // Z AL REVES   PIEZA 7
+
+};
+
+int DERECHA2[PIEZAS_MAX][FILAS_MAX][COLUMNAS_MAX] = {
+    // 7 piezas, 4 filas, 4 columnas
+    {{1, 1, 0, 0},
+     {1, 1, 0, 0},
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}}, // cuadrado PIEZA 2
+
+    {{1, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, //---- PIEZA 1
+
+    {{1, 1, 1, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, // T  PIEZA 3
+
+    {{1, 1, 1, 0},
+     {0, 0, 1, 0},
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}}, // L AL REVES PIEZA 4
+
+    {{1, 1, 1, 0}, {1, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, // L  PIEZA 5
+
+    {{1, 1, 0, 0}, {0, 1, 1, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, // Z  pieza 6
+
+    {{0, 1, 1, 0},
+     {1, 1, 0, 0},
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}} // Z AL REVES   PIEZA 7
+
+};
+
+int DERECHA3[PIEZAS_MAX][FILAS_MAX][COLUMNAS_MAX] = {
+    // 7 piezas, 4 filas, 4 columnas
+    {{1, 1, 0, 0},
+     {1, 1, 0, 0},
+     {0, 0, 0, 0},
+     {0, 0, 0, 0}}, // cuadrado PIEZA 2
+
+    {{0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}}, //---- PIEZA 1
+
+    {{0, 1, 0, 0}, {1, 1, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}}, // T  PIEZA 3
+
+    {{0, 1, 0, 0},
+     {0, 1, 0, 0},
+     {1, 1, 0, 0},
+     {0, 0, 0, 0}}, // L AL REVES PIEZA 4
+
+    {{1, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}}, // L  PIEZA 5
+
+    {{0, 1, 0, 0}, {1, 1, 0, 0}, {1, 0, 0, 0}, {0, 0, 0, 0}}, // Z  pieza 6
+
+    {{1, 0, 0, 0},
+     {1, 1, 0, 0},
+     {0, 1, 0, 0},
+     {0, 0, 0, 0}} // Z AL REVES   PIEZA 7
+
+};
 
 int meta;
 int rotacion;
@@ -44,11 +164,9 @@ typedef struct // se define las variables para ppoder mover la pieza y se
 
 Piece block = {7, 0}; // la pieza empieza en la columna 7 y en la fila 0
 
-bool colisionanV(int rotacion, int num_pieza)
-{
+bool colisionanV(int rotacion, int num_pieza) {
     int (*arreglo_pieza)[4][4];
-    switch (rotacion)
-    {
+    switch (rotacion) {
     case 1:
         arreglo_pieza = &DERECHA1[num_pieza];
         break;

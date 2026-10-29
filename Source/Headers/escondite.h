@@ -5,9 +5,9 @@
 #include <stdbool.h>
 
 typedef struct {
-    CollisionBox collision;
-    Vector2 coordinates;
+    CollisionBox col;
+    Vector2 coord;
     Dibujo *dib;
-    Vector2 zona_escondida;
-    bool ocupado;
+    float standing_distance;
+    bool occupied;
 } Escondite;

@@ -8,6 +8,8 @@ ListaEnemigos NewListaEnemigos(size_t n) {
 }
 
 void FreeListaEnemigos(ListaEnemigos *lenem) {
+    if (!lenem)
+        return;
     if (!lenem->arr)
         return;
 
@@ -20,7 +22,7 @@ void Dibujar_ListaEnemigos(ListaEnemigos *lenem) {
         Enemigo *e = &lenem->arr[i];
         if (e->estado != ENEM_STATE_NULL && e->estado != ENEM_STATE_INACTIVO &&
             e->estado != ENEM_STATE_OUT)
-            Dibujar(e->dib, e->coordenadas);
+            Dibujar(e->dib, e->coord);
     }
 }
 
@@ -33,7 +35,7 @@ void Update_ListaEnemigos(ListaEnemigos *lenem, float now, float frame_time) {
 
 void ListaEnemigos_ResetOutOfBounds(ListaEnemigos *lenem, int max_y) {
     for (size_t i = 0; i < lenem->n; i++) {
-        if (lenem->arr[i].coordenadas.y > max_y)
+        if (lenem->arr[i].coord.y > max_y)
             Enemigo_Reset(lenem->arr + i);
     }
 }

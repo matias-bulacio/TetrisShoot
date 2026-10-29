@@ -21,7 +21,7 @@ typedef struct BulletData {
     CollisionBox col;
 } BulletData;
 
-#define TETRIS_PIECES_SCALE 1.8
+#define TETRIS_PIECES_SCALE 1.65
 
 #define OFF_SCREEN_TOP -100
 #define OFF_SCREEN_LEFT -100

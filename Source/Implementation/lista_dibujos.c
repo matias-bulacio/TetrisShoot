@@ -58,9 +58,9 @@ insert:
 bool ListaDibujosEnCapas_Insert(ListaDibujosEnCapas *ldib, Dibujo *d, int layer,
                                 Vector2 coords) {
     return ListaDibujosEnCapas_InsertMD(ldib, (MetadataDibujo){
-                                                  .d = d,
+                                                  .dib = d,
                                                   .layer = layer,
-                                                  .coords = coords,
+                                                  .coord = coords,
                                               });
 }
 
@@ -80,6 +80,6 @@ bool ListaDibujosEnCapas_Free(ListaDibujosEnCapas *ldib) {
 
 void ListaDibujosEnCapas_Dibujar(ListaDibujosEnCapas *ldib) {
     for (size_t i = 0; i < ldib->n; i++) {
-        Dibujar(ldib->arr[i].d, ldib->arr[i].coords);
+        Dibujar(ldib->arr[i].dib, ldib->arr[i].coord);
     }
 }

@@ -190,13 +190,13 @@ int handler_func_escondites(const char *n, const char *v) {
                      "elements to the escondites list.");
             return false;
         }
-        if (idx >= lescs_cfg.cantidad) {
+        if (idx >= lescs_cfg.n) {
             TraceLog(LOG_ERROR, "Bad config. Impossible index due to item "
                                 "count on escondites list.");
             return false;
         }
-        lescs_cfg.arr[idx].coords = vec;
-        lescs_cfg.arr[idx].distancia_de_escondite = standing_distance_cfg;
+        lescs_cfg.arr[idx].coord = vec;
+        lescs_cfg.arr[idx].standing_distance = standing_distance_cfg;
         return true;
     bad_config_list:
         TraceLog(LOG_ERROR, "Bad config on %s/%s = %s", s, n, v);
@@ -289,7 +289,7 @@ int handler_func_tigre(const char *n, const char *v) {
         }
 
         for (size_t i = 0; i < lenems_cfg.n; i++) {
-            lenems_cfg.arr[i].colisiones = cb;
+            lenems_cfg.arr[i].col = cb;
         }
         return true;
     }
@@ -304,8 +304,8 @@ int handler_func_tigre(const char *n, const char *v) {
             return false;
         }
         for (size_t i = 0; i < lenems_cfg.n; i++) {
-            lenems_cfg.arr[i].min_velocidad = n;
-            lenems_cfg.arr[i].max_velocidad = m;
+            lenems_cfg.arr[i].min_speed = n;
+            lenems_cfg.arr[i].max_speed = m;
         }
         return true;
     }

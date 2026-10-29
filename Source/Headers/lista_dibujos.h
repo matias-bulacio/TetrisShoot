@@ -5,9 +5,9 @@
 #include <stddef.h>
 
 typedef struct {
-    Dibujo *d;
+    Dibujo *dib;
     int layer;
-    Vector2 coords;
+    Vector2 coord;
 } MetadataDibujo;
 
 typedef struct {

@@ -2,10 +2,10 @@
 #include <math.h>
 #include <stdlib.h>
 
-ListaEscondites NewListaEscondites(size_t cant) {
+ListaEscondites NewListaEscondites(size_t n) {
     ListaEscondites le;
-    le.arr = MemAlloc(cant * sizeof(*le.arr));
-    le.cantidad = cant;
+    le.arr = MemAlloc(n * sizeof(*le.arr));
+    le.n = n;
     return le;
 }
 
@@ -26,31 +26,30 @@ Escondite *PrimerEsconditeLibre(ListaEscondites *lesc) {
     if (!lesc->arr)
         return NULL;
 
-    for (size_t i = 0; i < lesc->cantidad; i++) {
-        if (lesc->arr[i].ocupado == false)
+    for (size_t i = 0; i < lesc->n; i++) {
+        if (lesc->arr[i].occupied == false)
             return lesc->arr + i;
     }
     return NULL;
 }
 
-Escondite *SiguienteEscondite(ListaEscondites *lesc, Vector2 coords) {
+Escondite *SiguienteEscondite(ListaEscondites *lesc, Vector2 coord) {
     Escondite *esc = NULL;
-    for (size_t i = 0; i < lesc->cantidad; i++) {
-        if (lesc->arr[i].distancia_de_escondite + lesc->arr[i].coords.y <=
-            coords.y)
+    for (size_t i = 0; i < lesc->n; i++) {
+        if (lesc->arr[i].standing_distance + lesc->arr[i].coord.y <= coord.y)
             continue;
-        if (lesc->arr[i].ocupado)
+        if (lesc->arr[i].occupied)
             continue;
 
-        if (!esc || (fabsf(esc->coords.x - coords.x) >
-                     fabsf(lesc->arr[i].coords.x + -coords.x)))
+        if (!esc || (fabsf(esc->coord.x - coord.x) >
+                     fabsf(lesc->arr[i].coord.x + -coord.x)))
             esc = lesc->arr + i;
     }
     return esc;
 }
 
 void Dibujar_ListaEscondites(ListaEscondites *lesc) {
-    for (size_t i = 0; i < lesc->cantidad; i++) {
-        Dibujar(lesc->arr[i].dib, lesc->arr[i].coords);
+    for (size_t i = 0; i < lesc->n; i++) {
+        Dibujar(lesc->arr[i].dib, lesc->arr[i].coord);
     }
 }

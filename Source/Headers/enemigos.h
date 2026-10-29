@@ -18,17 +18,17 @@ typedef enum {
 
 typedef struct {
     Enemigo_Estado estado;
-    Vector2 objetivo;
-    double esperar_hasta;
-    Vector2 coordenadas;
-    int velocidad;
-    int min_velocidad;
-    int max_velocidad;
-    CollisionBox colisiones;
+    Vector2 goal;
+    double wait_until;
+    Vector2 coord;
+    int speed;
+    int min_speed;
+    int max_speed;
+    CollisionBox col;
     Dibujo *dib;
     Escondite *esc;
-    ListaEscondites *le;
-    ListaEscapes *lexits;
+    ListaEscondites *lesc;
+    ListaEscapes *lexit;
 } Enemigo;
 
 void Enemigo_Update(Enemigo *e, float now, float frame_time);

@@ -4,7 +4,7 @@
 
 typedef struct {
     Escondite *arr;
-    size_t cantidad;
+    size_t n;
 } ListaEscondites;
 
 ListaEscondites NewListaEscondites(size_t cant);

@@ -113,7 +113,7 @@ int setup_shooter() {
     }
 
     collision_margin = *GetCollisionMargin();
-    for (size_t i = 0; i < lesc->cantidad; i++) {
+    for (size_t i = 0; i < lesc->n; i++) {
         Escondite *esc = lesc->arr + i;
 
         dib_escondites[i] = GetDibujoForTetrisPiece((enum Pieza)sig_piezas[i]);
@@ -121,7 +121,7 @@ int setup_shooter() {
         int h = esc->dib->textura.height;
         int w = esc->dib->textura.width;
 
-        esc->collision = (CollisionBox){
+        esc->col = (CollisionBox){
             .up = -h / 2. + collision_margin,
             .down = h / 2. - collision_margin,
             .left = -w / 2. + collision_margin,
@@ -147,8 +147,8 @@ int setup_shooter() {
     for (size_t i = 0; i < lenem->n; i++) {
         Enemigo *e = &lenem->arr[i];
         e->estado = ENEM_STATE_NULL;
-        e->le = lesc;
-        e->lexits = lexits;
+        e->lesc = lesc;
+        e->lexit = lexits;
     }
     ldib = NewListaDibujosEnCapas(NUM_ESCONDITES + NUM_ENEMIGOS);
     return 1;
@@ -189,17 +189,17 @@ int shooter(bool setup) {
 
     for (size_t i = 0; i < lenem->n; i++) {
         Enemigo *enem = &lenem->arr[i];
-        if (DetectCollision(enem->colisiones, bullet_data->col,
-                            enem->coordenadas, bullet_data->coord)) {
+        if (DetectCollision(enem->col, bullet_data->col, enem->coord,
+                            bullet_data->coord)) {
             Enemigo_Reset(enem);
             bullet_data->show = false;
             goto sin_bala;
         }
     }
 
-    for (size_t i = 0; i < lesc->cantidad; i++) {
-        if (DetectCollision(lesc->arr[i].collision, bullet_data->col,
-                            lesc->arr[i].coords, bullet_data->coord)) {
+    for (size_t i = 0; i < lesc->n; i++) {
+        if (DetectCollision(lesc->arr[i].col, bullet_data->col,
+                            lesc->arr[i].coord, bullet_data->coord)) {
             bullet_data->show = false;
             goto sin_bala;
         }
@@ -214,14 +214,13 @@ sin_bala:
     ListaDibujosEnCapas_Reset(&ldib);
     for (size_t i = 0; i < lenem->n; i++) {
         Enemigo *e = &lenem->arr[i];
-        int layer =
-            e->coordenadas.y + e->dib->textura.height + e->dib->offset.y;
-        ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coordenadas);
+        int layer = e->coord.y + e->dib->textura.height + e->dib->offset.y;
+        ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coord);
     }
-    for (size_t i = 0; i < lesc->cantidad; i++) {
+    for (size_t i = 0; i < lesc->n; i++) {
         Escondite *e = &lesc->arr[i];
-        int layer = e->coords.y + e->dib->textura.height + e->dib->offset.y;
-        ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coords);
+        int layer = e->coord.y + e->dib->textura.height + e->dib->offset.y;
+        ListaDibujosEnCapas_Insert(&ldib, e->dib, layer, e->coord);
     }
 
     Dibujar(&dib_fondo,
